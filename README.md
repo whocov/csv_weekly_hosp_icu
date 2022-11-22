@@ -1,9 +1,9 @@
 # csv_weekly_hosp_icu
 The repository contain R script that generates the combined historical data of hospitalization and new icu data from official website source
 
-Purpose: Run R script and export the excel file to XMART 
-Author: Joao Muianga /  muiangaj@who.int
-Date: 22 Nov 2022
+- Purpose: Run R script and export the excel file to XMART 
+- Author: Joao Muianga /  muiangaj@who.int
+- Date: 22 Nov 2022
 
 The folder official website data contain automated R script that get country data of hospitalization and new ICU through API available and manually file and do the data clean.
 There are 2 folders
