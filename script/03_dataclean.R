@@ -77,25 +77,33 @@ unitedKingdom_data <- unitedKingdom_data%>%select(date, areaName, newAdmissions,
          new_icu             = covidOccupiedMVBeds)%>%
   mutate(report_date = as.Date(report_date))
 
+
 ############ Ireland hospitalization
-ireland_hosp_data <- ireland_hosp_file%>%
-  select(Date, SUM_no_new_admissions_covid19_p)%>%
-  rename( report_date         = Date,
-          new_hospitalization = SUM_no_new_admissions_covid19_p)%>%
-  mutate(country_name = "Ireland",
-         report_date = as.Date(report_date))
+ireland_hosp_data <- as.data.frame(irel_hospi_epi)
+ireland_hosp_data <- ireland_hosp_data%>%
+  select(features.properties.Date, features.properties.SUM_no_new_admissions_covid19_p)%>%
+  mutate(date = as.POSIXct(features.properties.Date / 1000, origin = "1970-01-01", tz = "timezones"))    # Convert milliseconds in date time
+
+ireland_hosp_data_1 <- ireland_hosp_data%>%
+  select(date, features.properties.SUM_no_new_admissions_covid19_p)%>%
+  rename(new_hospitalization = features.properties.SUM_no_new_admissions_covid19_p)%>%
+  mutate(report_date         = as.Date(date),
+         country_name        = "Ireland")
 
 
 ########### Ireland new critical
-ireland_icu_data<- ireland_icu_file%>%select(extract, adcconf)%>%
-  rename( report_date         = extract,
-          new_icu = adcconf)
-ireland_icu_data <- ireland_icu_data%>%
-  mutate(country_name = "Ireland",
-         report_date = as.Date(report_date))
+ireland_icu_data<- as.data.frame(irel_newicu_epi)%>%
+select(features.properties.extract, features.properties.adcconf)%>%
+  mutate(date = as.POSIXct(features.properties.extract / 1000, origin = "1970-01-01", tz = "timezones"))    # Convert milliseconds in date time
 
-ireland_data <- full_join(ireland_hosp_data, ireland_icu_data, by=c("country_name", "report_date"))                            # Join icu and hospitalization in Ireland
+ireland_icu_data_1 <- ireland_icu_data%>%
+  select(date, features.properties.adcconf)%>%
+  rename(new_icu             = features.properties.adcconf)%>%
+  mutate(report_date         = as.Date(date),
+         country_name        = "Ireland")
 
+ireland_data <- full_join(ireland_hosp_data_1, ireland_icu_data_1, by=c("country_name", "report_date"))                            # Join icu and hospitalization in Ireland
+ireland_data <- ireland_data%>%select(country_name, report_date, new_hospitalization, new_icu)%>%drop_na(report_date)
 
 ############## Denmark 
 denmark_data<- denmark_file%>%select(Dato, Total)%>%

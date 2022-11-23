@@ -70,7 +70,7 @@ pacman::p_load(
 ### Import file of countries who have API GET json or Github
 
 ########## New zealand - file coming from Github
-# Manual import
+# import csv
 new_zealand_file <- read.csv("https://raw.githubusercontent.com/minhealthnz/nz-covid-data/19a3dc6c82240915a45227d5b4b102730a7c43ed/cases/weekly-hospitalisations-for-covid.csv")
 
 ########## United States of America
@@ -103,6 +103,26 @@ request_swit$status_code   # check for any server error ("200" is good!)
 swit_api <- base::rawToChar(request_swit$content)
 switzerland_file <- jsonlite::fromJSON(swit_api, flatten = TRUE)
 
+######### Ireland 
+# hospitalization API
+path_ireland_hosp <- "https://services-eu1.arcgis.com/z6bHNio59iTqqSUY/arcgis/rest/services/Covid19AcuteHospitalHistoricSummaryOpenData/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+request_irel_hosp <- GET(url = path_ireland_hosp)
+request_irel_hosp$status_code   # check for any server error ("200" is good!)
+
+# submit the request, parse the response, and convert to a data frame
+irel_hosp_epi <- base::rawToChar(request_irel_hosp$content)
+irel_hospi_epi <- jsonlite::fromJSON(irel_hosp_epi, flatten = TRUE)
+
+# ICU API
+path_ireland_icu <- "https://services-eu1.arcgis.com/z6bHNio59iTqqSUY/arcgis/rest/services/ICUBISHistoricTimelinePublicView/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
+request_irel_icu <- GET(url = path_ireland_icu)
+request_irel_icu$status_code   # check for any server error ("200" is good!)
+
+# submit the request, parse the response, and convert to a data frame
+irel_icu_epi <- base::rawToChar(request_irel_icu$content)
+irel_newicu_epi <- jsonlite::fromJSON(irel_icu_epi, flatten = TRUE)
+
+
 
 ###############################################################################
 # import manually data from countries who don't have API connection available
@@ -115,12 +135,6 @@ norway_icu <- import(here("data", "raw","Norway_icu.xlsx"))
 ############ Denmark
 # official website: https://covid19.ssi.dk/overvagningsdata/download-fil-med-overvaagningdata
 denmark_file <- import(here("data", "raw", "Newly_admitted_over_time.csv"))
-
-
-######### Ireland hospitalization API
-# # https://covid-19.geohive.ie/datasets/c8208a0a8ff04a45b2922ae69e9b2206_0/explore
-ireland_hosp_file <- import(here("data", "raw", "COVID-19_SDU_Acute_Hospital_Time_Series_Summary.csv"))
-ireland_icu_file <- import(here("data", "raw", "COVID-19_NOCA_ICUBIS_Historic_Time_Series (1).csv"))
 
 ######### United kingdom 
 # https://coronavirus.data.gov.uk/details/healthcare?areaType=overview&areaName=United%20Kingdom
