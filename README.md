@@ -19,14 +19,14 @@ There are 2 folders
 
 when you download the folder use official_website_data.Rproj
 
-3- Countries with API 
+3- Countries with API Available
 - New Zealand
 - United States of America
 - Bulgaria
 - Switzerland
 - Ireland
 
-4- Countries with file
+4- Countries with csv/excel file for download manualy
 - Canada
 - United Kingdom
 - Norway
