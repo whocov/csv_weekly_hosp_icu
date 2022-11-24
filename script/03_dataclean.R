@@ -194,7 +194,34 @@ historical_data_4<- historical_data_3%>%
     iso_year    = year(epiweek))
 
 historical_data_full <- historical_data_4%>%
-  select(country_name, iso_year, epiweek, freq, freq_time, new_hospitalization, new_icu)
+  select(country_name, iso_year, epiweek, freq, freq_time, new_hospitalization, new_icu)%>%
+  mutate(country_name = recode(
+    country_name,
+    "United States of America"  = "UNITED STATES OF AMERICA",
+    "New Zealand"               = "NEW ZEALAND",
+    "Canada"                    = "CANADA",
+    "Norway"                    = "NORWAY",
+    "Switzerland"               = "SWITZERLAND",
+    "United Kingdom"            = "THE UNITED KINGDOM",
+    "Bulgaria"                  = "BULGARIA",
+    "Ireland"                   = "IRELAND",
+    "Denmark"                   = "DENMARK"
+     
+  ))%>%
+  rename(ADM0_NAME = country_name)
+
+########################################################
+### Compare Iso code and country name
+ref_places <- import(here("data", "ref_places", "data_export_NCOV_REF_PLACES.csv"))
+ref_places <- ref_places%>%filter(ADM0_NAME == "UNITED STATES OF AMERICA" | ADM0_NAME == "NEW ZEALAND" | ADM0_NAME == "CANADA" |
+                                   ADM0_NAME == "NORWAY" | ADM0_NAME =="SWITZERLAND" | ADM0_NAME == "THE UNITED KINGDOM" |
+                                    ADM0_NAME == "BULGARIA" | ADM0_NAME == "IRELAND" | ADM0_NAME == "DENMARK")%>%
+  select( ISO_2_CODE, ISO_3_CODE, ADM0_NAME, WHO_REGION)%>%distinct()
+
+
+##############
+##### Join to historical data
+historical_data_full <- dplyr::left_join(historical_data_full, ref_places, by =  "ADM0_NAME")
 
 ###########################################################################################
 #### Export data to Excel

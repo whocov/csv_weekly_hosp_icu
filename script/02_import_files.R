@@ -60,6 +60,8 @@ pacman::p_load(
   #################
   rmarkdown,        # produce PDFs, Word Documents, Powerpoints, and HTML files
   
+  fastLink,  # record matching
+  
   # tables for presentation
   #########################
   knitr,            # R Markdown report generation and html tables
