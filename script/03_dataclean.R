@@ -6,7 +6,8 @@
 message("\n...running 03_dataclean.R")
 source(here("script", "02_import_files.R"))
 
-
+####################################################################################
+########## Import files through API
 ################ United states of America
 usa_data <- USA_file%>%
   # remove states
@@ -17,7 +18,7 @@ usa_data <- USA_file%>%
          previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed))
 
 usa_data <- usa_data%>%
-    mutate( new_hospitalization = previous_day_admission_adult_covid_confirmed + previous_day_admission_pediatric_covid_confirmed,
+  mutate( new_hospitalization = previous_day_admission_adult_covid_confirmed + previous_day_admission_pediatric_covid_confirmed,
           country_name        = "United States of America",
           date                = as.Date(date))%>%
   rename( report_date = date)
@@ -60,12 +61,12 @@ colnames(bulgaria_file) <- as.character(unlist(bulgaria_file[1,]))              
 bulgaria_file = bulgaria_file[-1, ]
 
 bulgaria_data<- as.data.frame(bulgaria_file)%>%                                            # convert to dataframe
-          select(Дата, Новохоспитализирани )%>%
-          rename( report_date         = Дата,
-                  new_hospitalization = Новохоспитализирани)%>%
-          mutate(country_name         = "Bulgaria",
-                 report_date          = as.Date(report_date),
-                 new_hospitalization  = as.numeric(new_hospitalization))
+  select(Дата, Новохоспитализирани )%>%
+  rename( report_date         = Дата,
+          new_hospitalization = Новохоспитализирани)%>%
+  mutate(country_name         = "Bulgaria",
+         report_date          = as.Date(report_date),
+         new_hospitalization  = as.numeric(new_hospitalization))
 
 
 ############## United Kingdom
@@ -77,24 +78,38 @@ unitedKingdom_data <- unitedKingdom_data%>%select(date, areaName, newAdmissions,
          new_icu             = covidOccupiedMVBeds)%>%
   mutate(report_date = as.Date(report_date))
 
+names(ireland_hosp_data)
+
 ############ Ireland hospitalization
-ireland_hosp_data <- ireland_hosp_file%>%
-  select(Date, SUM_no_new_admissions_covid19_p)%>%
-  rename( report_date         = Date,
-          new_hospitalization = SUM_no_new_admissions_covid19_p)%>%
+ireland_hosp_data <- as.data.frame(ireland_hosp)
+ireland_hosp_data <- ireland_hosp_data%>%
+  select(features.properties.Date, features.properties.SUM_no_new_admissions_covid19_p)%>%
+  rename( date         = features.properties.Date,
+          new_hospitalization = features.properties.SUM_no_new_admissions_covid19_p)%>%
   mutate(country_name = "Ireland",
-         report_date = as.Date(report_date))
+         date = as.numeric(date))
+ireland_hosp_data_1 <- ireland_hosp_data%>%
+  mutate(report_date = as.POSIXct(date /1000 ,origin = "1970-01-01", tz = "timezone"))
+ireland_hosp_dat1 <- ireland_hosp_data_1%>%
+  select(country_name, report_date, new_hospitalization)%>%mutate(report_date = as.Date(report_date))
 
 
-########### Ireland new critical
-ireland_icu_data<- ireland_icu_file%>%select(extract, adcconf)%>%
-  rename( report_date         = extract,
-          new_icu = adcconf)
+############ Ireland ICU
+ireland_icu_data <- as.data.frame(ireland_icu)
 ireland_icu_data <- ireland_icu_data%>%
+  select(features.properties.extract, features.properties.adcconf)%>%
+  rename( date         = features.properties.extract,
+          new_icu = features.properties.adcconf)%>%
   mutate(country_name = "Ireland",
-         report_date = as.Date(report_date))
+         date = as.numeric(date))
+ireland_icu_data_1 <- ireland_icu_data%>%
+  mutate(report_date = as.POSIXct(date /1000 ,origin = "1970-01-01", tz = "timezone"))
+ireland_icu_dat1 <- ireland_icu_data_1%>%
+  select(country_name, report_date, new_icu)%>%mutate(report_date = as.Date(report_date))
 
-ireland_data <- full_join(ireland_hosp_data, ireland_icu_data, by=c("country_name", "report_date"))                            # Join icu and hospitalization in Ireland
+########### Ireland join table
+
+ireland_data <- full_join(ireland_hosp_dat1, ireland_icu_dat1, by=c("country_name", "report_date"))                            # Join icu and hospitalization in Ireland
 
 
 ############## Denmark 
@@ -121,13 +136,13 @@ norway_icu_data<- norway_icu%>%select(date, new_icu)%>%
 norway_data <- full_join(norway_hosp_data, norway_icu_data , by = c("country_name", "report_date")) 
 
 ######### Canada
-canada_data <- canada_file%>%select(Date, COVID_NEWICU, COVID_HOSP)%>%
+canada_data <- canada_file%>%select(Date, COVID_NEWICU, COVID_NEWOTHER)%>%
   mutate(Date         = as.Date(Date),
          COVID_NEWICU = as.numeric(COVID_NEWICU),
-         COVID_HOSP   = as.numeric(COVID_HOSP),
+         COVID_HOSP   = as.numeric(COVID_NEWOTHER),
          country_name = "Canada")%>%
   rename(report_date  = Date,
-         new_hospitalization = COVID_HOSP,
+         new_hospitalization = COVID_NEWOTHER,
          new_icu             = COVID_NEWICU)
 
 #####################################################################################
@@ -167,8 +182,8 @@ historical_data_2 <- historical_data_1%>%
     ),
     iso_year = year(report_date))%>%
   group_by(country_name, epiweek)%>%
-summarise(new_hospitalization = sum(new_hospitalization, na.rm = T),
-          new_icu             = sum(new_icu, na.rm = T))
+  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T),
+            new_icu             = sum(new_icu, na.rm = T))
 
 ######################### count time 
 historical_data_3 <- historical_data_2%>%
@@ -186,12 +201,41 @@ historical_data_4<- historical_data_3%>%
     iso_year    = year(epiweek))
 
 historical_data_full <- historical_data_4%>%
-  select(country_name, iso_year, epiweek, freq, freq_time, new_hospitalization, new_icu)
+  select(country_name, iso_year, epiweek, freq, freq_time, new_hospitalization, new_icu)%>%
+  rename(country = country_name)
+
+
+###################Change country name values
+historical_data_full <- historical_data_full%>%
+  mutate(country = recode(
+    country,
+    "United states of America" = "UNITED STATES OF AMERICA",
+    "Norway"                   = "NORWAY",
+    "United Kingdom"           = "THE UNITED KINGDOM",
+    "switzerland"              = "SWITZERLAND",
+    "Bulgaria"                 = "BULGARIA",
+    "Ireland"                  = "IRELAND",
+    "New Zealand"              = "NEW ZEALAND",
+    "Denmark"                  = "DENMARK",
+    "Canada"                   = "CANADA"
+    
+    
+  ))
+
+############################################
+## Import ref_countr data
+ref_places <- import(here("data", "ref_country", "data_export_NCOV_REF_PLACES.csv"))
+ref_places <- ref_places%>%distinct()%>%rename(country = ADM0_NAME)
+
+
+###########################################
+### Join ref country and historical data
+historical_dataset <- left_join(historical_data_full, ref_places, by= ("country"))
 
 ###########################################################################################
 #### Export data to Excel
 
-export(historical_data_full, here("data", "clean","historical_clean_data.xlsx"))
+export(historical_dataset, here("data", "clean","historical_clean_data.csv"))
 
 
 
