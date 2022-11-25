@@ -1,4 +1,4 @@
-ADM0_NAME,iso_year,epiweek,freq,freq_time,new_hospitalization,new_icu,ISO_3_CODE,WHO_REGION
+country_name,iso_year,epiweek,freq,freq_time,new_hospitalization,new_icu,iso3_code,WHO_REGION
 BULGARIA,2020,2020-06-01,weekly,1,26,0,BGR,EURO
 BULGARIA,2020,2020-06-08,weekly,1,209,0,BGR,EURO
 BULGARIA,2020,2020-06-15,weekly,1,191,0,BGR,EURO

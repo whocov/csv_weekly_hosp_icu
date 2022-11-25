@@ -226,6 +226,7 @@ ref_places <- ref_places%>%filter(ADM0_NAME == "UNITED STATES OF AMERICA" | ADM0
 ##############
 ##### Join to historical data
 historical_data_full <- dplyr::left_join(historical_data_full, ref_places, by =  "ADM0_NAME")
+historical_data_full <- historical_data_full%>%rename(country = ADM0_NAME, iso3_code = ISO_3_CODE)
 
 ###########################################################################################
 #### Export data to Excel
