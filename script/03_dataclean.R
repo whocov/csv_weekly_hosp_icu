@@ -67,7 +67,6 @@ bulgaria_data<- as.data.frame(bulgaria_file)%>%                                 
                  report_date          = as.Date(report_date),
                  new_hospitalization  = as.numeric(new_hospitalization))
 
-
 ############## United Kingdom
 unitedKingdom_data <- full_join(united_kingdom_hosp, united_kingdom_icu , by = c("areaName", "date"))
 unitedKingdom_data <- unitedKingdom_data%>%select(date, areaName, newAdmissions,covidOccupiedMVBeds)%>%
@@ -105,12 +104,14 @@ ireland_icu_data_1 <- ireland_icu_data%>%
 ireland_data <- full_join(ireland_hosp_data_1, ireland_icu_data_1, by=c("country_name", "report_date"))                            # Join icu and hospitalization in Ireland
 ireland_data <- ireland_data%>%select(country_name, report_date, new_hospitalization, new_icu)%>%drop_na(report_date)
 
+
 ############## Denmark 
 denmark_data<- denmark_file%>%select(Dato, Total)%>%
   rename( report_date         = Dato,
           new_hospitalization = Total)%>%
   mutate( report_date = as.Date(report_date),
           country_name = "Denmark")
+
 
 
 ############ Norway hospitalization
@@ -129,14 +130,16 @@ norway_icu_data<- norway_icu%>%select(date, new_icu)%>%
 norway_data <- full_join(norway_hosp_data, norway_icu_data , by = c("country_name", "report_date")) 
 
 ######### Canada
-canada_data <- canada_file%>%select(Date, COVID_NEWICU, COVID_HOSP)%>%
+canada_data <- canada_file%>%select(Date, COVID_NEWICU, COVID_NEWOTHER)%>%
   mutate(Date         = as.Date(Date),
          COVID_NEWICU = as.numeric(COVID_NEWICU),
-         COVID_HOSP   = as.numeric(COVID_HOSP),
+         COVID_HOSP   = as.numeric(COVID_NEWOTHER),
          country_name = "Canada")%>%
   rename(report_date  = Date,
-         new_hospitalization = COVID_HOSP,
+         new_hospitalization = COVID_NEWOTHER,
          new_icu             = COVID_NEWICU)
+
+
 
 #####################################################################################
 # Join all countries by report date
@@ -153,6 +156,7 @@ data_2_3_canada <- full_join(data_2_3, canada_data, by = c("report_date", "count
 
 historical_data <- full_join(data_2_3_canada, data_1_4, by = c("report_date", "country_name", "new_hospitalization"))
 historical_data%>%count(country_name) # check countries
+
 
 
 ###################################################################
@@ -216,7 +220,7 @@ ref_places <- import(here("data", "ref_places", "data_export_NCOV_REF_PLACES.csv
 ref_places <- ref_places%>%filter(ADM0_NAME == "UNITED STATES OF AMERICA" | ADM0_NAME == "NEW ZEALAND" | ADM0_NAME == "CANADA" |
                                    ADM0_NAME == "NORWAY" | ADM0_NAME =="SWITZERLAND" | ADM0_NAME == "THE UNITED KINGDOM" |
                                     ADM0_NAME == "BULGARIA" | ADM0_NAME == "IRELAND" | ADM0_NAME == "DENMARK")%>%
-  select( ISO_2_CODE, ISO_3_CODE, ADM0_NAME, WHO_REGION)%>%distinct()
+  select(ISO_3_CODE, ADM0_NAME, WHO_REGION)%>%distinct()
 
 
 ##############
@@ -226,7 +230,7 @@ historical_data_full <- dplyr::left_join(historical_data_full, ref_places, by = 
 ###########################################################################################
 #### Export data to Excel
 
-export(historical_data_full, here("data", "clean","historical_clean_data.xlsx"))
+export(historical_data_full, here("data", "clean","historical_clean_data.csv"))
 
 
 
