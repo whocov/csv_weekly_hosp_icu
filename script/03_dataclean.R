@@ -204,12 +204,13 @@ historical_data_full <- historical_data_4%>%
   select(country_name, iso_year, epiweek, freq, freq_time, new_hospitalization, new_icu)%>%
   rename(country = country_name)
 
+historical_data_full%>%view()
 
 ###################Change country name values
 historical_data_full <- historical_data_full%>%
   mutate(country = recode(
     country,
-     "United states of America" = "UNITED STATES OF AMERICA",
+     "United States of America" = "UNITED STATES OF AMERICA",
      "Norway"                   = "NORWAY",
      "United Kingdom"           = "THE UNITED KINGDOM",
      "switzerland"              = "SWITZERLAND",
@@ -218,8 +219,7 @@ historical_data_full <- historical_data_full%>%
      "New Zealand"              = "NEW ZEALAND",
      "Denmark"                  = "DENMARK",
      "Canada"                   = "CANADA"
-    
-    
+ 
   ))
 
 ############################################
