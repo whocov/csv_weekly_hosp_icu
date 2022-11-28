@@ -204,7 +204,7 @@ historical_data_full <- historical_data_4%>%
   select(country_name, iso_year, epiweek, freq, freq_time, new_hospitalization, new_icu)%>%
   rename(country = country_name)
 
-historical_data_full%>%view()
+historical_data_4%>%count(country_name)%>%view()
 
 ###################Change country name values
 historical_data_full <- historical_data_full%>%
@@ -213,7 +213,7 @@ historical_data_full <- historical_data_full%>%
      "United States of America" = "UNITED STATES OF AMERICA",
      "Norway"                   = "NORWAY",
      "United Kingdom"           = "THE UNITED KINGDOM",
-     "switzerland"              = "SWITZERLAND",
+     "Switzerland"              = "SWITZERLAND",
      "Bulgaria"                 = "BULGARIA",
      "Ireland"                  = "IRELAND",
      "New Zealand"              = "NEW ZEALAND",
@@ -230,7 +230,7 @@ ref_places <- ref_places%>%distinct()%>%rename(country = ADM0_NAME)
 
 ###########################################
 ### Join ref country and historical data
- historical_dataset <- left_join(historical_data_full, ref_places, by= ("country"))
+historical_dataset <- left_join(historical_data_full, ref_places, by= ("country"))
 
 ###########################################################################################
 #### Export data to Excel
