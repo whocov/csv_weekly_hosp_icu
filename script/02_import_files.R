@@ -82,11 +82,16 @@ request$status_code  # check for any server error ("200" is good!)
 USA_api <- base::rawToChar(request$content)
 USA_file <- jsonlite::fromJSON(USA_api, flatten = TRUE)
 
+# import USA data manually
+USA_file_2 <- import(here("data", "raw","COVID-19_Reported_Patient_Impact_and_Hospital_Capacity_by_State.csv"))
+skim(USA_file_2)
+
 ######### Bulgaria
 # prepare request
 path_bulg <- "https://data.egov.bg/resource/download/e59f95dd-afde-43af-83c8-ea2916badd19/json"
 request_bulg <- GET(url = path_bulg)
 request_bulg$status_code  # check for any server error ("200" is good!)
+
 
 # submit the request, parse the response, and convert to a data frame
 bulgaria_api <- base::rawToChar(request_bulg$content)
@@ -142,9 +147,5 @@ united_kingdom_icu <- import(here("data", "raw","united_k_icu_data_2022-Nov-17.c
 
 ######### Canada
 canada_file <- import(here('data', "raw","covid19-epiSummary-hospVentICU (1).csv"))
-
-
-
-
 
 

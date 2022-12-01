@@ -9,7 +9,7 @@ source(here("script", "02_import_files.R"))
 ####################################################################################
 ########## Import files through API
 ################ United states of America
-usa_data <- USA_file%>%
+usa_data <- USA_file_2%>%
   # remove states
   filter(state != "PR" | state != "VI"| state != "MP" | state != "PW" | state != "FM" | state != "MH" | state != "GU" | state !="AS" )%>%
   select(date, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
@@ -17,15 +17,16 @@ usa_data <- USA_file%>%
   mutate(previous_day_admission_adult_covid_confirmed     = as.numeric(previous_day_admission_adult_covid_confirmed),
          previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed))
 
-usa_data <- usa_data%>%
+usa_data_1 <- usa_data%>%
     mutate( new_hospitalization = previous_day_admission_adult_covid_confirmed + previous_day_admission_pediatric_covid_confirmed,
           country_name        = "United States of America",
           date                = as.Date(date))%>%
   rename( report_date = date)
 
-usa_data <- usa_data%>%select(country_name, report_date, new_hospitalization)
-
-
+usa_data_00 <- usa_data_1%>%
+  select(country_name, report_date, new_hospitalization)%>%
+  group_by(report_date, country_name)%>%
+  summarise(new_hospitalization =  sum(new_hospitalization, na.rm = T) )
 
 ############### Switzerland data clean
 switzerland_1<- switzerland_file%>%
@@ -151,7 +152,7 @@ canada_data <- canada_file%>%select(Date, COVID_NEWICU, COVID_NEWOTHER)%>%
 data_1 <- full_join(switzerland_data,bulgaria_data, by=c("report_date", "country_name", "new_hospitalization"))
 data_2 <- full_join(new_zealand_data,unitedKingdom_data, by=c("report_date", "country_name", "new_hospitalization", "new_icu"))
 data_3 <- full_join(ireland_data,norway_data, by=c("report_date", "country_name", "new_hospitalization", "new_icu"))
-data_4 <- full_join(usa_data, denmark_data, by=c("report_date", "country_name", "new_hospitalization"))
+data_4 <- full_join(usa_data_00, denmark_data, by=c("report_date", "country_name", "new_hospitalization"))
 
 ######### Join datasets
 data_1_4 <- full_join(data_1,data_4, by = c("report_date", "country_name", "new_hospitalization"))
@@ -204,7 +205,7 @@ historical_data_full <- historical_data_4%>%
   select(country_name, iso_year, epiweek, freq, freq_time, new_hospitalization, new_icu)%>%
   rename(country = country_name)
 
-historical_data_4%>%count(country_name)%>%view()
+historical_data_full%>%view()
 
 ###################Change country name values
 historical_data_full <- historical_data_full%>%
