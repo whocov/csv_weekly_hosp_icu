@@ -57,6 +57,9 @@ new_zealand_data <- new_zealand_file%>%
   mutate(country_name = "New Zealand",
          report_date  = as.Date(report_date))
 
+new_zealand_data%>%export(here("data", "clean","new_zeal.csv"))
+
+
 # Bulgaria data source
 colnames(bulgaria_file) <- as.character(unlist(bulgaria_file[1,]))                         # assign headers based on existing row in dataframe in R
 bulgaria_file = bulgaria_file[-1, ]
@@ -121,6 +124,7 @@ denmark_data<- denmark_file%>%select(Dato, Total)%>%
           country_name = "Denmark")
 
 
+
 ############ Norway hospitalization
 norway_hosp_data<- norway_hosp%>%select(date, new_hospit)%>%
   rename( report_date         = date,
@@ -172,7 +176,7 @@ historical_data_1 <- historical_data%>%
   slice_max(new_hospitalization,         # keep row per group with maximum date value 
             n = 1,         # keep only the single highest row 
             with_ties = F) # if there's a tie (of date), take the first row
-
+                                   
 # Create week number column and summarise
 historical_data_2 <- historical_data_1%>%
   mutate(
@@ -182,9 +186,12 @@ historical_data_2 <- historical_data_1%>%
       week_start = 1
     ),
     iso_year = year(report_date))%>%
+# sum column base on value number
   group_by(country_name, epiweek)%>%
-summarise(new_hospitalization = sum(new_hospitalization, na.rm = T),
-          new_icu             = sum(new_icu, na.rm = T))
+summarise(new_hospitalization = if(all(is.na(new_hospitalization))) NA else sum(new_hospitalization, na.rm = T),
+          new_icu             = if(all(is.na(new_icu))) NA else sum(new_icu, na.rm = T))
+
+historical_data_2%>%view()
 
 ######################### count time 
 historical_data_3 <- historical_data_2%>%
@@ -205,7 +212,6 @@ historical_data_full <- historical_data_4%>%
   select(country_name, iso_year, epiweek, freq, freq_time, new_hospitalization, new_icu)%>%
   rename(country = country_name)
 
-historical_data_full%>%view()
 
 ###################Change country name values
 historical_data_full <- historical_data_full%>%

@@ -84,7 +84,6 @@ USA_file <- jsonlite::fromJSON(USA_api, flatten = TRUE)
 
 # import USA data manually
 USA_file_2 <- import(here("data", "raw","COVID-19_Reported_Patient_Impact_and_Hospital_Capacity_by_State.csv"))
-skim(USA_file_2)
 
 ######### Bulgaria
 # prepare request
