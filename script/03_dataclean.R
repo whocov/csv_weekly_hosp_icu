@@ -9,7 +9,7 @@ source(here("script", "02_import_files.R"))
 ####################################################################################
 ########## Import files through API
 ################ United states of America
-usa_data <- USA_file_2%>%
+usa_data <- USA_file%>%
   # remove states
   filter(state != "PR" | state != "VI"| state != "MP" | state != "PW" | state != "FM" | state != "MH" | state != "GU" | state !="AS" )%>%
   select(date, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
@@ -17,16 +17,33 @@ usa_data <- USA_file_2%>%
   mutate(previous_day_admission_adult_covid_confirmed     = as.numeric(previous_day_admission_adult_covid_confirmed),
          previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed))
 
-usa_data_1 <- usa_data%>%
-    mutate( new_hospitalization = previous_day_admission_adult_covid_confirmed + previous_day_admission_pediatric_covid_confirmed,
-          country_name        = "United States of America",
-          date                = as.Date(date))%>%
-  rename( report_date = date)
+usa_data_2_rows <- USA_file_1%>%
+  # remove states
+  filter(state != "PR" | state != "VI"| state != "MP" | state != "PW" | state != "FM" | state != "MH" | state != "GU" | state !="AS" )%>%
+  select(date, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
+  # calculate new hospitalization column
+  mutate(previous_day_admission_adult_covid_confirmed     = as.numeric(previous_day_admission_adult_covid_confirmed),
+         previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed))
 
-usa_data_00 <- usa_data_1%>%
+usa_data <- usa_data%>%
+    mutate( new_hospitalization = previous_day_admission_adult_covid_confirmed + previous_day_admission_pediatric_covid_confirmed,
+            country_name        = "United States of America",
+            date                = as.Date(date))%>% rename( report_date = date)
+
+usa_data_2_rows <- usa_data_2_rows%>%
+  mutate( new_hospitalization = previous_day_admission_adult_covid_confirmed + previous_day_admission_pediatric_covid_confirmed,
+          country_name        = "United States of America",
+          date                = as.Date(date))%>%rename( report_date = date)
+
+# join to table
+USA_dataset <- left_join(usa_data, usa_data_2_rows, by=c("country_name", "report_date", "new_hospitalization"))
+USA_dataset_1 <- USA_dataset%>%select(country_name, report_date, new_hospitalization)
+                         
+usa_data_00 <- USA_dataset_1%>%
   select(country_name, report_date, new_hospitalization)%>%
   group_by(report_date, country_name)%>%
   summarise(new_hospitalization =  sum(new_hospitalization, na.rm = T) )
+usa_data_00%>%view()
 
 ############### Switzerland data clean
 switzerland_1<- switzerland_file%>%
@@ -206,10 +223,11 @@ historical_data_4<- historical_data_3%>%
       true      = "weekly", 
       false     = "daily"
     ),
-    iso_year    = year(epiweek))
+    iso_year    = year(epiweek),
+    iso_week_number = week(epiweek))
 
 historical_data_full <- historical_data_4%>%
-  select(country_name, iso_year, epiweek, freq, freq_time, new_hospitalization, new_icu)%>%
+  select(country_name, iso_year, iso_week_number, epiweek, freq, freq_time, new_hospitalization, new_icu)%>%
   rename(country = country_name)
 
 
@@ -234,10 +252,13 @@ historical_data_full <- historical_data_full%>%
 ref_places <- import(here("data", "ref_country", "data_export_NCOV_REF_PLACES.csv"))
 ref_places <- ref_places%>%distinct()%>%rename(country = ADM0_NAME)
 
-
 ###########################################
 ### Join ref country and historical data
 historical_dataset <- left_join(historical_data_full, ref_places, by= ("country"))
+# remove last week
+
+last_week <- max(historical_dataset$iso_week_number)
+historical_dataset<- historical_dataset%>%filter(iso_week_number !=last_week)
 
 ###########################################################################################
 #### Export data to Excel

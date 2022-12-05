@@ -74,7 +74,7 @@ pacman::p_load(
 new_zealand_file <- read.csv("https://raw.githubusercontent.com/minhealthnz/nz-covid-data/19a3dc6c82240915a45227d5b4b102730a7c43ed/cases/weekly-hospitalisations-for-covid.csv")
 
 ########## United States of America
-path <- "https://healthdata.gov/resource/g62h-syeh.json"  # prepare request
+path <- "https://healthdata.gov/resource/g62h-syeh.json?$limit=50000"  # prepare request
 request <- GET(url = path)
 request$status_code  # check for any server error ("200" is good!)
 
@@ -82,8 +82,17 @@ request$status_code  # check for any server error ("200" is good!)
 USA_api <- base::rawToChar(request$content)
 USA_file <- jsonlite::fromJSON(USA_api, flatten = TRUE)
 
+#### next rows for USA
+path_1 <- "https://healthdata.gov/resource/g62h-syeh.json?$limit=50000&$offset=50000"  # prepare request
+request_1 <- GET(url = path_1)
+request_1$status_code  # check for any server error ("200" is good!)
+
+# submit the request, parse the response, and convert to a data frame
+USA_api_1 <- base::rawToChar(request_1$content)
+USA_file_1 <- jsonlite::fromJSON(USA_api_1, flatten = TRUE)
+
 # import USA data manually
-USA_file_2 <- import(here("data", "raw","COVID-19_Reported_Patient_Impact_and_Hospital_Capacity_by_State.csv"))
+#USA_file_2 <- import(here("data", "raw","COVID-19_Reported_Patient_Impact_and_Hospital_Capacity_by_State.csv"))
 
 ######### Bulgaria
 # prepare request
