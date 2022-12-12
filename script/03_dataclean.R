@@ -99,7 +99,7 @@ unitedKingdom_data <- unitedKingdom_data%>%select(date, areaName, newAdmissions,
          new_icu             = covidOccupiedMVBeds)%>%
   mutate(report_date = as.Date(report_date))
 
-names(ireland_hosp_data)
+
 
 ############ Ireland hospitalization
 ireland_hosp_data <- as.data.frame(ireland_hosp)
@@ -208,7 +208,6 @@ historical_data_2 <- historical_data_1%>%
 summarise(new_hospitalization = if(all(is.na(new_hospitalization))) NA else sum(new_hospitalization, na.rm = T),
           new_icu             = if(all(is.na(new_icu))) NA else sum(new_icu, na.rm = T))
 
-historical_data_2%>%view()
 
 ######################### count time 
 historical_data_3 <- historical_data_2%>%
@@ -255,6 +254,7 @@ ref_places <- ref_places%>%distinct()%>%rename(country = ADM0_NAME)
 ###########################################
 ### Join ref country and historical data
 historical_dataset <- left_join(historical_data_full, ref_places, by= ("country"))
+
 # remove last week
 
 last_week <- max(historical_dataset$iso_week_number)
@@ -264,11 +264,6 @@ historical_dataset<- historical_dataset%>%filter(iso_week_number !=last_week)
 #### Export data to Excel
 
 export(historical_dataset, here("data", "clean","historical_clean_data.csv"))
-
-
-
-
-
 
 
 
