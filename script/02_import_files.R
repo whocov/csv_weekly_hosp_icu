@@ -91,8 +91,9 @@ request_1$status_code  # check for any server error ("200" is good!)
 USA_api_1 <- base::rawToChar(request_1$content)
 USA_file_1 <- jsonlite::fromJSON(USA_api_1, flatten = TRUE)
 
-# import USA data manually
-#USA_file_2 <- import(here("data", "raw","COVID-19_Reported_Patient_Impact_and_Hospital_Capacity_by_State.csv"))
+########### France
+################ country is using csv file
+france_data <- read.csv("https://www.data.gouv.fr/fr/datasets/r/6fadff46-9efd-4c53-942a-54aca783c30c")
 
 ######### Bulgaria
 # prepare request
