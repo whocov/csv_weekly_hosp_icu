@@ -12,9 +12,9 @@ source(here("script", "02_import_files.R"))
 ################ USA file 1
 usa_data <- USA_file%>%
   # remove states
-  filter(state != "PR" | state != "VI"| state != "MP" | state != "PW" | state != "FM" | state != "MH" | state != "GU" | state !="AS" )%>%
+  filter(state != "PR" & state != "VI"& state != "MP" & state != "PW" & state != "FM" & state != "MH" & state != "GU" & state !="AS" )%>%
   replace(is.na(.), 0) %>%
-  select(date, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
+  select(state, date, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
   # calculate new hospitalization column
   mutate(previous_day_admission_adult_covid_confirmed     = as.numeric(previous_day_admission_adult_covid_confirmed),
          previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed),
@@ -25,7 +25,7 @@ usa_data <- USA_file%>%
 ################ USA file 1
 usa_data_2_rows <- USA_file_1%>%
   # remove states
-  filter(state != "PR" | state != "VI"| state != "MP" | state != "PW" | state != "FM" | state != "MH" | state != "GU" | state !="AS" )%>%
+  filter(state != "PR" & state != "VI"& state != "MP" & state != "PW" & state != "FM" & state != "MH" & state != "GU" & state !="AS")%>%
   select(date, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
   replace(is.na(.), 0) %>%
   # calculate new hospitalization column
@@ -205,8 +205,6 @@ PR_VI_dataset_full<-PR_VI_dataset_1%>%filter(new_hospitalization != 0)%>%
   summarise(new_hospitalization = sum(new_hospitalization, na.rm = T))
 
 
-
-
 #####################################################################################
 # Join all countries by report date
 #################################################################
@@ -218,8 +216,8 @@ data_4 <- full_join(usa_data_full, denmark_data, by=c("report_date", "country_na
 ######### Join datasets
 data_1_4 <- full_join(data_1,data_4, by = c("report_date", "country_name", "new_hospitalization"))
 data_2_3 <- full_join(data_2, data_3, by = c("report_date", "country_name", "new_hospitalization", "new_icu"))
-data_2_3_canada <- full_join(data_2_3, canada_data, by = c("report_date", "country_name", "new_hospitalization", "new_icu"))
-data_5_1_4 <- full_join(PR_VI_dataset_1, data_1_4, by = c("report_date", "country_name", "new_hospitalization"))
+data_2_3_canada <- full_join(data_2_3, canada_data_full, by = c("report_date", "country_name", "new_hospitalization", "new_icu"))
+data_5_1_4 <- full_join(PR_VI_dataset_full, data_1_4, by = c("report_date", "country_name", "new_hospitalization"))
 
 historical_data <- full_join(data_2_3_canada, data_5_1_4, by = c("report_date", "country_name", "new_hospitalization"))
 
@@ -310,18 +308,7 @@ historical_dataset<- historical_dataset%>%filter(iso_week_number !=last_week)
 export(historical_dataset, here("data", "clean","historical_clean_data.csv"))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+########################################################################################################################
 
 
 
