@@ -13,11 +13,13 @@ source(here("script", "02_import_files.R"))
 usa_data <- USA_file%>%
   # remove states
   filter(state != "PR" | state != "VI"| state != "MP" | state != "PW" | state != "FM" | state != "MH" | state != "GU" | state !="AS" )%>%
+  replace(is.na(.), 0) %>%
   select(date, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
   # calculate new hospitalization column
   mutate(previous_day_admission_adult_covid_confirmed     = as.numeric(previous_day_admission_adult_covid_confirmed),
-         previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed))
-usa_data_1<-usa_data%>%filter(!is.na(previous_day_admission_adult_covid_confirmed) & !is.na(previous_day_admission_pediatric_covid_confirmed))
+         previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed),
+         new_hospitalization = previous_day_admission_adult_covid_confirmed + previous_day_admission_pediatric_covid_confirmed,
+         date = as.Date(date))
 
 
 ################ USA file 1
@@ -25,26 +27,22 @@ usa_data_2_rows <- USA_file_1%>%
   # remove states
   filter(state != "PR" | state != "VI"| state != "MP" | state != "PW" | state != "FM" | state != "MH" | state != "GU" | state !="AS" )%>%
   select(date, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
+  replace(is.na(.), 0) %>%
   # calculate new hospitalization column
   mutate(previous_day_admission_adult_covid_confirmed     = as.numeric(previous_day_admission_adult_covid_confirmed),
-         previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed))
-usa_data_2<-usa_data_2_rows%>%filter(!is.na(previous_day_admission_adult_covid_confirmed) & !is.na(previous_day_admission_pediatric_covid_confirmed))
+         previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed),
+         new_hospitalization = previous_day_admission_adult_covid_confirmed + previous_day_admission_pediatric_covid_confirmed,
+         date = as.Date(date))
 
-usa_data_join <- full_join(usa_data_1, usa_data_2, by=c("date", "previous_day_admission_adult_covid_confirmed", "previous_day_admission_pediatric_covid_confirmed"))
-  
+#### Join tables
+usa_data_join <- full_join(usa_data, usa_data_2_rows, by=c("date", "new_hospitalization"))
 
-usa_data_00 <- usa_data_join%>%
-mutate(previous_day_admission_adult_covid_confirmed = abs(previous_day_admission_adult_covid_confirmed), 
-       previous_day_admission_pediatric_covid_confirmed = abs(previous_day_admission_pediatric_covid_confirmed))%>%
-  replace(is.na(.), 0)
-
-usa_data_01<-usa_data_00%>%select( date, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
-  mutate(new_hospitalization = rowSums(across(where(is.numeric))),
-         country_name        = "United States of America",
-         date                = as.Date(date))%>%rename( report_date = date)
-                     
-usa_data_02 <- usa_data_01%>%
-  select(country_name, report_date, new_hospitalization)
+## summarize by date
+usa_data_full<-usa_data_join%>%filter(new_hospitalization != 0)%>%
+  select( date, new_hospitalization)%>%
+  mutate( country_name        = "United States of America")%>%
+  group_by(country_name, date)%>%
+  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T))%>%rename(report_date = date)
 
 
 ############### Switzerland data clean
@@ -140,8 +138,6 @@ denmark_data<- denmark_file%>%select(Dato, Total)%>%
   mutate( report_date = as.Date(report_date),
           country_name = "Denmark")
 
-
-
 ############ Norway hospitalization
 norway_hosp_data<- norway_hosp%>%select(date, new_hospit)%>%
   rename( report_date         = date,
@@ -159,13 +155,12 @@ norway_data <- full_join(norway_hosp_data, norway_icu_data , by = c("country_nam
 
 ######### Canada
 canada_data <- canada_file%>%select(Date, COVID_NEWICU, COVID_NEWOTHER)%>%
-  mutate(Date         = as.Date(Date),
-         COVID_NEWICU = as.numeric(COVID_NEWICU),
-         COVID_HOSP   = as.numeric(COVID_NEWOTHER),
-         country_name = "Canada")%>%
-  rename(report_date  = Date,
-         new_hospitalization = COVID_NEWOTHER,
-         new_icu             = COVID_NEWICU)
+  mutate(report_date         = as.Date(Date),
+         new_icu = as.numeric(COVID_NEWICU),
+         new_hospitalization   = as.numeric(COVID_NEWOTHER),
+         country_name = "Canada")
+
+canada_data_full <- canada_data%>%select(report_date, country_name, new_icu, new_hospitalization)
 
 
 ############## Puerto Rico and Virgin Island (US)
@@ -175,40 +170,39 @@ PR_VI_data_1 <- USA_file%>%
   # filter interested state
   filter(state == "PR" | state == "VI")%>%
   select(date, state, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
+  replace(is.na(.), 0) %>%
   # calculate new hospitalization column
   mutate(previous_day_admission_adult_covid_confirmed     = as.numeric(previous_day_admission_adult_covid_confirmed),
          previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed),
-         date                = as.Date(date),
+         new_hospitalization = previous_day_admission_adult_covid_confirmed + previous_day_admission_pediatric_covid_confirmed,
+         date = as.Date(date),
          state= recode(state,
                        "PR" = "Puerto Rico",
                        "VI" = "United States Virgin Islands"))%>% rename( report_date = date, country_name = state)
 
-Puerto_virgin_1 <- PR_VI_data_1%>%
-  replace(is.na(.), 0) %>%
-  mutate(new_hospitalization = rowSums(across(where(is.numeric))))
 
 ################ Puerto Rico and Virgin Island (US) file 2
 PR_VI_data_2 <- USA_file_1%>%
   # filter interested state
   filter(state == "PR" | state == "VI")%>%
   select(date, state, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
+  replace(is.na(.), 0) %>%
   # calculate new hospitalization column
   mutate(previous_day_admission_adult_covid_confirmed     = as.numeric(previous_day_admission_adult_covid_confirmed),
          previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed),
-         date                = as.Date(date),
+         new_hospitalization = previous_day_admission_adult_covid_confirmed + previous_day_admission_pediatric_covid_confirmed,
+         report_ = as.Date(date),
          state= recode(state,
                        "PR" = "Puerto Rico",
                        "VI" = "United States Virgin Islands"))%>% rename( report_date = date, country_name = state)
 
-Puerto_virgin_2 <- PR_VI_data_2%>%
-  replace(is.na(.), 0) %>%
-  mutate(new_hospitalization = rowSums(across(where(is.numeric))))
-
-
-
 # join the two API in one
 PR_VI_dataset <- full_join(Puerto_virgin_1, Puerto_virgin_2, by=c("country_name", "report_date", "new_hospitalization"))
 PR_VI_dataset_1 <- PR_VI_dataset%>%select(country_name, report_date, new_hospitalization)
+
+PR_VI_dataset_full<-PR_VI_dataset_1%>%filter(new_hospitalization != 0)%>%
+  group_by(country_name, report_date)%>%
+  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T))
 
 
 
@@ -219,7 +213,7 @@ PR_VI_dataset_1 <- PR_VI_dataset%>%select(country_name, report_date, new_hospita
 data_1 <- full_join(switzerland_data,bulgaria_data, by=c("report_date", "country_name", "new_hospitalization"))
 data_2 <- full_join(new_zealand_data,unitedKingdom_data, by=c("report_date", "country_name", "new_hospitalization", "new_icu"))
 data_3 <- full_join(ireland_data,norway_data, by=c("report_date", "country_name", "new_hospitalization", "new_icu"))
-data_4 <- full_join(usa_data_00, denmark_data, by=c("report_date", "country_name", "new_hospitalization"))
+data_4 <- full_join(usa_data_full, denmark_data, by=c("report_date", "country_name", "new_hospitalization"))
 
 ######### Join datasets
 data_1_4 <- full_join(data_1,data_4, by = c("report_date", "country_name", "new_hospitalization"))
@@ -315,11 +309,6 @@ historical_dataset<- historical_dataset%>%filter(iso_week_number !=last_week)
 
 export(historical_dataset, here("data", "clean","historical_clean_data.csv"))
 
-
-historical_dataset%>%group_by(country, iso_year)%>%
-  summarise(annual_historical = sum(new_hospitalization, na.rm = T))%>%flextable()
-
-historical_dataset%>%filter(country == "UNITED STATES VIRGIN ISLANDS")%>%view()
 
 
 
