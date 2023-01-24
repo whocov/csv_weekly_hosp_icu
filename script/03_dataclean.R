@@ -191,13 +191,13 @@ PR_VI_data_2 <- USA_file_1%>%
   mutate(previous_day_admission_adult_covid_confirmed     = as.numeric(previous_day_admission_adult_covid_confirmed),
          previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed),
          new_hospitalization = previous_day_admission_adult_covid_confirmed + previous_day_admission_pediatric_covid_confirmed,
-         report_ = as.Date(date),
+         report_date = as.Date(date),
          state= recode(state,
                        "PR" = "Puerto Rico",
-                       "VI" = "United States Virgin Islands"))%>% rename( report_date = date, country_name = state)
+                       "VI" = "United States Virgin Islands"))%>% rename( country_name = state)
 
 # join the two API in one
-PR_VI_dataset <- full_join(Puerto_virgin_1, Puerto_virgin_2, by=c("country_name", "report_date", "new_hospitalization"))
+PR_VI_dataset <- full_join(PR_VI_data_1, PR_VI_data_2, by=c("country_name", "report_date", "new_hospitalization"))
 PR_VI_dataset_1 <- PR_VI_dataset%>%select(country_name, report_date, new_hospitalization)
 
 PR_VI_dataset_full<-PR_VI_dataset_1%>%filter(new_hospitalization != 0)%>%
@@ -313,6 +313,6 @@ export(historical_dataset, here("data", "clean","historical_clean_data.csv"))
 
 
 
-
+week("2022-09-11")
 
 

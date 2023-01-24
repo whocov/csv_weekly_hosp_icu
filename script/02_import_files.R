@@ -109,7 +109,7 @@ bulgaria_file <- jsonlite::fromJSON(bulgaria_api, flatten = TRUE)
 
 ########## Switzerland
 # prepare request
-path_swit <- "https://www.covid19.admin.ch/api/data/20221115-a4xvqmpe/sources/COVID19Hosp_reason_AKL10_w.json"
+path_swit <- "https://www.covid19.admin.ch/api/data/20230117-i4oav3jt/sources/COVID19Hosp_reason_AKL10_w.json"
 request_swit <- GET(url = path_swit)
 request_swit$status_code   # check for any server error ("200" is good!)
 
