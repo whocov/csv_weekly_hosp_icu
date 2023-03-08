@@ -1,0 +1,748 @@
+---
+title: "Global Hospitalization Report 2023"
+author: "World Health Organization (Data Management)"
+date: "`r paste0('Produced on ', format(Sys.Date(), '%d %B %Y'))`"
+output: 
+    html_document:
+    self-contained: TRUE
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+    toc_depth: 3
+    number_sections: true
+    theme: lumen
+params:
+  weekly: true
+  moving_avg: false
+---
+
+```{r, include=FALSE, context = "setup"}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE
+)
+
+```
+```{css zoom-lib-src, echo = FALSE}
+script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"
+```
+
+
+```{js zoom-jquery, echo = FALSE}
+$(document).ready(function() {
+$('body').prepend('<div class=\"zoomDiv\"><img src=\"\" class=\"zoomImg\"></div>');
+// onClick function for all plots (img's)
+$('img.zoom').click(function() {
+$('.zoomImg').attr('src', $(this).attr('src')).css({width: '1000px'});
+$('.zoomDiv').css({opacity: '1', width: 'auto', border: '1px solid white', borderRadius: '5px', position: 'fixed', top: '50%', left: '50%', marginRight: '-50%', transform: 'translate(-50%, -50%)', boxShadow: '0px 0px 50px #888888', zIndex: '50', overflow: 'auto', maxHeight: '100%'});
+});
+// onClick function for zoomImg
+$('img.zoomImg').click(function() {
+$('.zoomDiv').css({opacity: '0', width: '0%'}); 
+});
+});
+```
+
+```{css, echo=FALSE}
+.header-section-number::after {
+content: ".";
+}
+
+h2 {
+font-size: 23px !important;
+}
+
+h3 {
+font-size: 18px !important;
+}
+
+body {
+font-size: 16px !important;
+}
+
+.zoomDiv {
+opacity: 0;
+position:absolute;
+top: 50%;
+left: 50%;
+z-index: 50;
+transform: translate(-50%, -50%);
+box-shadow: 0px 0px 50px #888888;
+max-height:100%; 
+overflow: scroll;
+}
+
+.zoomImg {
+width: 1200px;
+}
+
+```
+
+
+```{r setup, include=FALSE}
+# load packages
+pacman::p_load(
+  learnr,
+  here, 
+  rio,
+  openxlsx, 
+  remotes, 
+  tidyverse,
+  skimr, 
+  epikit,       
+  lubridate,
+  stringr,
+  base,
+  janitor, 
+  gtsummary, 
+  corrr, 
+  caret,
+  broom,
+  httr,
+  jsonlite,
+  cowplot,          
+  RColorBrewer, 
+  gghighlight,
+  ggrepel,
+  ggExtra,
+  tsibble, 
+  viridis,
+  scales, 
+  apyramid,
+  rmarkdown,
+  knitr,
+  flextable)
+
+# import linelist from XMART
+hosp_data <- rio::import(here::here("data","raw","data_export_NCOV_A_COMBINED_WEEK_SEX_AGEGROUP_MIXEDSOURCES(5).csv")) %>% 
+  as_tibble()
+
+# import from historical 
+historical_data <- rio::import(here::here("data","clean","historical_clean_data.csv")) %>% 
+  as_tibble()
+
+# import ADAPT
+adapt <- rio::import(here::here("data","raw","adapt.xlsx")) %>% 
+  as_tibble()
+
+## data clean of xmart database
+hosp_data <- hosp_data%>%filter(SEX == "All" & AGEGROUP == "All" )%>%
+  group_by(WHO_REGION, COUNTRY_NAME, ISO_YEAR,ISO_WEEK, ISO_START_DATE)%>%
+  summarise(weekly_cases  = sum(DAILY_CASES, na.rm = T),
+            weekly_deaths = sum(DAILY_CASES_DEATHS, na.rm = T),
+            weekly_hosp   = sum(DETAILED_CASES_HOSPITALISED, na.rm = T))
+
+# create table showing all countries who reported hospitalization and deaths from 2022 up to week 4
+summarytable <- hosp_data%>%
+  group_by(WHO_REGION, COUNTRY_NAME, ISO_YEAR, weekly_hosp)%>%
+  dplyr::select(-c(ISO_WEEK, weekly_cases, weekly_deaths, ISO_START_DATE))%>%  # remove columns unecessaries
+  ungroup()
+
+### summarize countries report time
+ tbl_region_country<- summarytable%>%
+  filter(weekly_hosp>0)%>%
+  group_by(WHO_REGION, COUNTRY_NAME, ISO_YEAR)%>%
+  mutate(times_reported = n())%>%
+  dplyr::select(-weekly_hosp)%>%
+  distinct()%>%
+  pivot_wider(names_from = "ISO_YEAR",
+              values_from = "times_reported")%>%
+  dplyr::select(WHO_REGION, COUNTRY_NAME, `2020`,`2021`,`2022`,`2023`)
+ 
+ ### total of countries by region
+ region_country_1 <-tbl_region_country%>%
+   rename(Y_20 = `2020`,Y_21 =`2021`, Y_22 =`2022`,Y_23=`2023`)%>%
+   pivot_longer(
+     cols = Y_20:Y_23,
+     names_to = "year",
+     values_to = "counts"
+   )
+ # show total countries report new hospitalization
+ count_region <- region_country_1%>%
+   filter(!is.na(counts))%>%
+   group_by(WHO_REGION, year)%>%
+   summarise(time_repited = n())%>%
+   pivot_wider(names_from = "year",
+               values_from = "time_repited")
+ 
+ # total countries
+total_countries <- hosp_data%>%
+   filter(ISO_START_DATE<"2023-01-24")%>%
+   dplyr::select(WHO_REGION, COUNTRY_NAME, ISO_START_DATE, ISO_YEAR, weekly_cases, weekly_hosp)
+
+countries_region <- total_countries%>%
+  dplyr::select(WHO_REGION, COUNTRY_NAME)%>%
+  ungroup()%>%
+  dplyr::select(-ISO_YEAR)%>%
+  dplyr::select(-ISO_WEEK)%>%
+  distinct()%>%
+  group_by(WHO_REGION)%>%
+  summarise(total_country = n())
+
+# countries reporting from week 45 2022 up to week 4 2023
+coun_last_3_months <- total_countries%>%
+  mutate(ISO_START_DATE = as.Date(ISO_START_DATE))%>%
+  dplyr::select(WHO_REGION, COUNTRY_NAME, weekly_hosp, ISO_START_DATE)%>%
+  ungroup()%>%
+    filter(ISO_START_DATE>max(ISO_START_DATE)-90 & weekly_hosp >0)%>%
+   dplyr::select(WHO_REGION, COUNTRY_NAME)%>%
+   distinct()%>%
+   group_by(WHO_REGION)%>%
+   summarise(last_3months = n())
+
+# countries reporting in the last 21 days
+coun_21days <- total_countries%>%
+  mutate(ISO_START_DATE = as.Date(ISO_START_DATE))%>%
+  dplyr::select(WHO_REGION, COUNTRY_NAME, weekly_hosp, ISO_START_DATE)%>%
+  ungroup()%>%
+    filter(ISO_START_DATE>max(ISO_START_DATE)-21 & weekly_hosp >0)%>%
+   dplyr::select(WHO_REGION, COUNTRY_NAME)%>%
+   distinct()%>%
+   group_by(WHO_REGION)%>%
+   summarise(last_21days = n())
+  
+# countries reporting in the last 14 days
+coun_14days <- total_countries%>%
+  mutate(ISO_START_DATE = as.Date(ISO_START_DATE))%>%
+  dplyr::select(WHO_REGION, COUNTRY_NAME, weekly_hosp, ISO_START_DATE)%>%
+  ungroup()%>%
+    filter(ISO_START_DATE>max(ISO_START_DATE)-14 & weekly_hosp >0)%>%
+   dplyr::select(WHO_REGION, COUNTRY_NAME)%>%
+   distinct()%>%
+   group_by(WHO_REGION)%>%
+   summarise(last_14days = n())
+   
+# countries reporting in the last 7 days
+coun_7days <- total_countries%>%
+  mutate(ISO_START_DATE = as.Date(ISO_START_DATE))%>%
+  dplyr::select(WHO_REGION, COUNTRY_NAME, weekly_hosp, ISO_START_DATE)%>%
+  ungroup()%>%
+    filter(ISO_START_DATE>max(ISO_START_DATE)-7 & weekly_hosp >0)%>%
+   dplyr::select(WHO_REGION, COUNTRY_NAME)%>%
+   distinct()%>%
+   group_by(WHO_REGION)%>%
+   summarise(last_7days = n())
+
+# Join all tables of countries reporting new hosp
+tbl_1 <- full_join(countries_region,count_region , by="WHO_REGION")
+tbl_2 <- full_join(coun_last_3_months, coun_21days, by = "WHO_REGION")
+tbl_3 <- full_join(coun_14days, coun_7days,  by = "WHO_REGION")
+table_1 <- full_join(tbl_1, tbl_2,by="WHO_REGION" )
+report_region <- full_join(table_1, tbl_3,by="WHO_REGION" )
+
+```
+# 1-Summary table {.tabset}
+
+Total number and percentage of countries by region reporting new hospitalization data since 2022 through week 4-2023 22-01-2023 in XMART Mixed source database.
+
+* - The table shows the total number of countries by region existing in the REF country database of XMART, 
+* - For each year it presents the total number of countries and the percentage of countries that reported new weekly hospitalization data and the percentage by region. 
+* - All countries that reported at least 1 week were included in the count.
+
+## Total of Region by period
+
+
+```{r, echo=FALSE}
+report_region%>%
+    mutate(y_2022 =str_glue("{Y_22} ({scales::percent(Y_22/total_country)})"),
+           y_2023 =str_glue("{Y_23} ({scales::percent(Y_23/total_country)})"),
+           lasts_21days =str_glue("{last_21days} ({scales::percent(last_21days/total_country)})"),
+           lasts_14days =str_glue("{last_14days} ({scales::percent(last_14days/total_country)})"),
+           lasts_7days =str_glue("{last_7days} ({scales::percent(last_7days/total_country)})"))%>%
+  mutate(lasts_7days = recode(lasts_7days, "NA (NA)" = "0 (0)"),
+         lasts_21days = recode(lasts_21days, "NA (NA)" = "0 (0)"),
+         lasts_14days = recode(lasts_14days, "NA (NA)" = "0 (0)"),
+         y_2022 = recode(y_2022, "NA (NA)" = "0 (0)"),
+         y_2023 = recode(y_2023, "NA (NA)" = "0 (0)"))%>%
+  filter(WHO_REGION != "OTHER")%>%
+  dplyr::select(
+    "Region"             = WHO_REGION,
+    "Total of countries" = total_country,
+    "2022 (%)"           = y_2022,
+    "2023 (%)"           = y_2023,
+    "Last 21 days (%)"   = lasts_21days,
+    "Last 14 days  (%)"  = lasts_14days,
+    "Last 7 days  (%)"   = lasts_7days)%>%
+ flextable()%>%autofit()%>%
+  width(j = 1, width = 1.8)%>%
+  width(j = 2, width = 1.8)%>%
+  width(j = c(3,4,5,6,7), width = 1.6)%>%
+  border_remove()%>%
+  theme_booktabs()%>%
+  fontsize(i = 1, size = 12, part = "header") %>%   # adjust font size of header
+  bold(i = 1, bold = TRUE, part = "header") %>%     # adjust bold face of header
+    # add vertical lines to separate Recovered and Died sections
+  vline(part = "all", j = 1) %>%   # at column 2 
+  vline(part = "all", j = 2) %>%   # at column 2 
+    vline(part = "all", j = 4) %>%   # at column 2 
+  flextable::align(align = "center", j = c(3:7), part = "all")
+
+
+```
+
+
+
+```{r , echo=FALSE}
+# create table showing all countries who reported hospitalization and deaths from 2022 up to week 4
+summarytable_1 <- hosp_data%>%
+  mutate(ISO_START_DATE = as.Date(ISO_START_DATE))%>%
+  filter(ISO_START_DATE < "2023-01-24")%>%
+  group_by(WHO_REGION, COUNTRY_NAME, ISO_YEAR, weekly_hosp)%>%
+  dplyr::select(-c(ISO_WEEK, weekly_cases, weekly_deaths))%>%  # remove columns unecessaries
+  ungroup()
+
+### countries reporting in the last 3 months
+ count_last_3months<- summarytable_1%>%
+  mutate(ISO_START_DATE = as.Date(ISO_START_DATE))%>%
+  filter(weekly_hosp>0 & ISO_START_DATE>max(ISO_START_DATE)-90)%>%
+  group_by(WHO_REGION, COUNTRY_NAME)%>%
+  distinct()%>%
+  summarise(last_3months = n(),
+            Total_3months   = sum(weekly_hosp, na.rm = T))
+ 
+ ### countries reporting in the last 21 days
+  count_last_21days<- summarytable_1%>%
+  mutate(ISO_START_DATE = as.Date(ISO_START_DATE))%>%
+  filter(weekly_hosp>0 & ISO_START_DATE>max(ISO_START_DATE)-21)%>%
+  group_by(WHO_REGION, COUNTRY_NAME)%>%
+  distinct()%>%
+  summarise(last_21days = n(),
+            Total_21days   = sum(weekly_hosp, na.rm = T))
+  
+   ### countries reporting in the last 14 days
+  count_last_14days<- summarytable_1%>%
+  mutate(ISO_START_DATE = as.Date(ISO_START_DATE))%>%
+  filter(weekly_hosp>0 & ISO_START_DATE>max(ISO_START_DATE)-14)%>%
+  group_by(WHO_REGION, COUNTRY_NAME)%>%
+  distinct()%>%
+  summarise(last_14day = n(),
+            Total_14days   = sum(weekly_hosp, na.rm = T))
+  
+   ### countries reporting in the last 7 days
+  count_last_7days<- summarytable_1%>%
+  mutate(ISO_START_DATE = as.Date(ISO_START_DATE))%>%
+  filter(weekly_hosp>0 & ISO_START_DATE>max(ISO_START_DATE)-7)%>%
+  group_by(WHO_REGION, COUNTRY_NAME)%>%
+  distinct()%>%
+  summarise(last_7day = n(),
+            Total_7days   = sum(weekly_hosp, na.rm = T))
+  
+  ##  Join tables
+rep_tabl1 <- full_join(count_last_3months,count_last_21days, by=c("WHO_REGION","COUNTRY_NAME") )
+rep_tabl2 <- full_join(count_last_14days,count_last_7days, by=c("WHO_REGION","COUNTRY_NAME") )
+rep_tab <- full_join(rep_tabl1,rep_tabl2, by=c("WHO_REGION","COUNTRY_NAME") )
+
+```
+## Countries reporting hospitalization
+The total number of countries by region that reported new weekly hospitalizations in the last 3 months, including the number of times they reported for each period.
+
+```{r, echo=FALSE}
+rep_tab%>%dplyr::select(-last_7day)%>%
+ flextable()%>%autofit()%>%
+  width(j = 1, width = 1.8)%>%
+  width(j = 2, width = 1.8)%>%
+  width(j = c(3,4,5,6,7,8,9), width = 1.6)%>%
+  add_header_row(
+    top = TRUE,
+    values = c("Region",
+               "Country",
+               "Last 3 months (week 44_2022)",
+               "",
+               "Last 21 days",
+               "",
+               "Last 14 days",
+               "",
+               "Last 7 das"
+               ))%>%
+  set_header_labels(
+    WHO_REGION = "",
+    COUNTRY_NAME = "",
+    last_3months = "Weeks count",
+    Total_3months = "Total of new hospitalizaition",
+    last_21days = "Weeks count",
+    Total_21days = "Total of new hospitalizaition",
+    last_14day = "Weeks count",
+    Total_14days = "Total of new hospitalizaition",
+    Total_7days = "Total of new hospitalizaition"
+  )%>%
+  border_remove()%>%
+  theme_booktabs()%>%
+  fontsize(i = 1, size = 12, part = "header") %>%   # adjust font size of header
+  bold(i = 1, bold = TRUE, part = "header")%>%    # adjust bold face of header
+    # add vertical lines to separate Recovered and Died sections
+  vline(part = "all", j = 1) %>%   # at column 1 
+  vline(part = "all", j = 2) %>%   # at column 2 
+  vline(part = "all", j = 4) %>%   # at column 4
+  vline(part = "all", j = 6) %>%   # at column 6
+  vline(part = "all", j = 8) %>%   # at column 8
+  hline(i = 11)%>%    # at row 11
+  hline(i = 22)%>%    # at row 22
+  hline(i = 28)%>%    # at row 28
+  hline(i = 54)%>%    # at row 53
+  hline(i = 55)%>%    # at row 54
+  flextable::align(align = "center", j = c(3:9), part = "all")
+
+```
+
+```{r echo=FALSE}
+plot_region<- hosp_data%>%
+  mutate(epiweek = lubridate::floor_date(              # create new column of weeks
+    ISO_START_DATE,                                 # date column
+    unit = "week",                                  # give start of the week
+    week_start = 1))%>%
+  group_by(WHO_REGION, epiweek)%>%
+  summarise(hosp  = sum(weekly_hosp, na.rm = T),
+            death = sum(weekly_deaths, na.rm = T),
+            cases = sum(weekly_cases, na.rm = T))%>%
+  filter(WHO_REGION != "OTHER" & epiweek >"2022-10-30")%>%
+  filter(epiweek <"2023-01-24")
+
+```
+
+# 2- Epicurve of weekly incidence by region .
+* - The Epicurve show weekly incidence of new hospitalization and deaths reported in the last 3 months by regions
+* - The number of deaths corresponds to all countries in the region
+* - New hospitalization corresponds only to countries that reported in this period
+
+```{r  gg-oz-gapminder, fig.cap = "Life expectancy"}
+install.packages("ggplot2")
+library(ggplot2)
+library(dplyr)
+
+ ggplot(data = plot_region, aes(x = epiweek, y = hosp))+
+  geom_line(aes(color = "New Hospitalization"), size = 1)+
+  geom_line(data = plot_region, aes(x = epiweek, y = death, color = "Deaths"), size=1)+
+  scale_color_discrete(name = '', labels = c( 'Deaths','New hospitalization'))+
+  scale_x_date(
+    expand = c(0,0),
+    date_breaks = "1 week",
+    date_labels = "%Y -W%W")+
+  scale_y_continuous(
+    position = "right")+
+  theme_minimal()+
+  facet_wrap(~WHO_REGION, scales = "free", ncol = 2)+
+  theme(axis.text.x = element_text(size = 6, face = "bold", angle = 90),
+        axis.text.y = element_text(size = 9),
+        legend.position = "bottom")+
+  labs(
+    x = "Weekly report",
+    y = "cases in number",
+    title = "Time series of countries reporting new hospitalization and deaths, period: from W44:2022 to W4_2023"
+  )
+
+```
+
+
+```{r echo=FALSE}
+plot_country<- hosp_data%>%
+  mutate(epiweek = lubridate::floor_date(              # create new column of weeks
+    ISO_START_DATE,                                 # date column
+    unit = "week",                                  # give start of the week
+    week_start = 1))%>%
+  group_by(WHO_REGION, COUNTRY_NAME, epiweek)%>%
+  summarise(hosp  = sum(weekly_hosp, na.rm = T),
+            death = sum(weekly_deaths, na.rm = T),
+            cases = sum(weekly_cases, na.rm = T))%>%
+  filter(WHO_REGION != "OTHER" & epiweek >"2022-10-30")%>%
+  filter(epiweek <"2023-01-24")
+
+```
+# 3-  Epicurve by country per region {.tabset}
+Epicurve of weekly incidence of new hospitalization and deaths
+
+## **Europe**  
+```{r}
+euro<-plot_country%>%filter(WHO_REGION == "EUR")%>%
+  group_by(WHO_REGION, COUNTRY_NAME)%>%
+  filter(!all(hosp == 0))             # remove all countries that only reported zero
+
+ggplot( data = euro, aes(x = epiweek, y = hosp))+
+  geom_line(aes(color = "New Hospitalization"),size =1)+
+  geom_line(data = euro, aes(x = epiweek, y = death, color = "Deaths"),size =1)+
+  scale_color_discrete(name = '', labels = c( 'Deaths','New hospitalization'))+
+  scale_x_date(
+    expand = c(0,0),
+    date_breaks = "1 weeks",
+    date_labels = "%Y -W%W")+
+  scale_y_continuous(
+    position = "right")+
+   theme_minimal()+
+  facet_wrap(~COUNTRY_NAME, scales = "free", ncol = 5)+
+    theme(axis.text.x = element_text(size = 4, angle = 90),
+          axis.title.x = element_text(size = 5),
+        legend.position = "bottom")+
+  labs(
+    x = "Weekly report",
+    y = "cases in number",
+    title = "Europe: Time series of countries reporting new hospitalization and deaths, period: from W44:2022 to W4_2023"
+  )
+```
+
+## **AMRO** 
+```{r}
+amro<-plot_country%>%filter(WHO_REGION == "AMR")%>%
+  group_by(WHO_REGION, COUNTRY_NAME)%>%
+  filter(!all(hosp == 0))             # remove all countries that only reported zero
+
+ggplot( data = amro, aes(x = epiweek, y = hosp))+
+  geom_line(aes(color = "New Hospitalization"),size =1)+
+  geom_line(data = amro, aes(x = epiweek, y = death, color = "Deaths"),size =1)+
+  scale_color_discrete(name = '', labels = c( 'Deaths','New hospitalization'))+
+  scale_x_date(
+    expand = c(0,0),
+    date_breaks = "1 weeks",
+    date_labels = "%Y -W%W")+
+  scale_y_continuous(
+    position = "right")+
+   theme_minimal()+
+  facet_wrap(~COUNTRY_NAME, scales = "free")+
+    theme(axis.text.x = element_text(size = 4, angle = 90),
+          axis.title.x = element_text(size = 6),
+        legend.position = "bottom")+
+  labs(
+    x = "Weekly report",
+    y = "cases in number",
+    title = "AMRO: Time series of countries reporting new hospitalization and deaths, period: from W44:2022 to W4_2023"
+  )
+```
+
+## **WPRO**
+```{r}
+wpro<-plot_country%>%filter(WHO_REGION == "WPR")%>%
+  group_by(WHO_REGION, COUNTRY_NAME)%>%
+  filter(!all(hosp == 0))             # remove all countries that only reported zero
+
+ggplot( data = wpro, aes(x = epiweek, y = hosp))+
+  geom_line(aes(color = "New Hospitalization"),size =1)+
+  geom_line(data = wpro, aes(x = epiweek, y = death, color = "Deaths"),size =1)+
+  scale_color_discrete(name = '', labels = c( 'Deaths','New hospitalization'))+
+  scale_x_date(
+    expand = c(0,0),
+    date_breaks = "1 weeks",
+    date_labels = "%Y -W%W")+
+  scale_y_continuous(
+    position = "right")+
+   theme_minimal()+
+  facet_wrap(~COUNTRY_NAME, scales = "free")+
+    theme(axis.text.x = element_text(size = 4, angle = 90),
+          axis.title.x = element_text(size = 6),
+        legend.position = "bottom")+
+  labs(
+    x = "Weekly report",
+    y = "cases in number",
+    title = "WPRO: Time series of countries reporting new hospitalization and deaths, period: from W44:2022 to W4_2023"
+  )
+```
+
+
+## **AFRO** 
+```{r}
+afro<-plot_country%>%filter(WHO_REGION == "AFR")%>%
+  group_by(WHO_REGION, COUNTRY_NAME)%>%
+  filter(!all(hosp == 0))             # remove all countries that only reported zero
+
+ggplot( data = afro, aes(x = epiweek, y = hosp))+
+  geom_line(aes(color = "New Hospitalization"),size =1)+
+  geom_line(data = afro, aes(x = epiweek, y = death, color = "Deaths"),size =1)+
+  scale_color_discrete(name = '', labels = c( 'Deaths','New hospitalization'))+
+  scale_x_date(
+    expand = c(0,0),
+    date_breaks = "1 weeks",
+    date_labels = "%Y -W%W")+
+  scale_y_continuous(
+    position = "right")+
+   theme_minimal()+
+  facet_wrap(~COUNTRY_NAME, scales = "free")+
+    theme(axis.text.x = element_text(size = 4, angle = 90),
+          axis.title.x = element_text(size = 6),
+        legend.position = "bottom")+
+  labs(
+    x = "Weekly report",
+    y = "cases in number",
+    title = "AFRO: Time series of countries reporting new hospitalization and deaths, period: from W44:2022 to W4_2023"
+  )
+```
+
+## **SEARO**
+```{r}
+searo<-plot_country%>%filter(WHO_REGION == "SEAR")%>%
+  group_by(WHO_REGION, COUNTRY_NAME)%>%
+  filter(!all(hosp == 0))             # remove all countries that only reported zero
+
+ggplot( data = searo, aes(x = epiweek, y = hosp))+
+  geom_line(aes(color = "New Hospitalization"),size =1)+
+  geom_line(data = searo, aes(x = epiweek, y = death, color = "Deaths"),size =1)+
+  scale_color_discrete(name = '', labels = c( 'Deaths','New hospitalization'))+
+  scale_x_date(
+    expand = c(0,0),
+    date_breaks = "1 weeks",
+    date_labels = "%Y -W%W")+
+  scale_y_continuous(
+    position = "right")+
+   theme_minimal()+
+  facet_wrap(~COUNTRY_NAME, scales = "free")+
+    theme(axis.text.x = element_text(size = 4, angle = 90),
+          axis.title.x = element_text(size = 6),
+        legend.position = "bottom")+
+  labs(
+    x = "Weekly report",
+    y = "cases in number",
+    title = "SEARO: Time series of countries reporting new hospitalization and deaths, period: from W44:2022 to W4_2023"
+  )
+```
+
+
+
+```{r}
+full_report<- hosp_data%>%
+  mutate(epiweek = lubridate::floor_date(              # create new column of weeks
+    ISO_START_DATE,                                 # date column
+    unit = "week",                                  # give start of the week
+    week_start = 1))%>%
+  group_by(WHO_REGION, COUNTRY_NAME, epiweek)%>%
+  summarise(hosp  = sum(weekly_hosp, na.rm = T),
+            death = sum(weekly_deaths, na.rm = T),
+            cases = sum(weekly_cases, na.rm = T))%>%
+  filter(WHO_REGION != "OTHER" & epiweek >"2022-10-30")%>%
+  group_by(WHO_REGION, COUNTRY_NAME)%>%
+  filter(hosp !=0 )%>%
+  filter(n()>=10)%>%
+  filter(epiweek <"2023-01-24")
+
+full_report_1<- full_report%>%
+  group_by(WHO_REGION, COUNTRY_NAME)%>%
+  summarise(hosp        = sum(hosp, na.rm = T),
+            death       = sum(death, na.rm = T),
+            death_ratio = round(death/hosp, digits = 2),
+            hosp_per_1m = round(hosp/1000000, digits = 4) )
+
+last7day<- full_report%>%
+  group_by(WHO_REGION, COUNTRY_NAME, hosp)%>%
+  filter(epiweek == "2023-01-23")%>%
+  dplyr::select(WHO_REGION, COUNTRY_NAME,"hosp_last_7days" = hosp)
+
+# join last week and full report
+report_table <- full_join(full_report_1,last7day, by= c("WHO_REGION", "COUNTRY_NAME"))
+
+```
+# 4 - Countries with weekly full report
+Table show countries with full report in these last 3 months
+```{r}
+report_table%>%
+flextable()%>%autofit()%>%
+  width(j = c(1,2), width = 1.7)%>%
+  width(j = c(1,2,3,4,5,6,7), width = 1.4)%>%
+  add_header_row(
+    top = TRUE,
+    values = c("Region",
+               "Country",
+               "Cumulative from W44-2022 to W4-2023",
+               "",
+               "",
+               "",
+               "Hospitalization in last 7 days"
+    ))%>%
+  set_header_labels(
+    WHO_REGION      = "",
+    COUNTRY_NAME    = "",
+    hosp            = "Hospitalization",
+    death           = "Deaths",
+    death_ratio     = "Deaths Ratio (%)",
+    hosp_per_1m     = "Total hospitalization per 1M pop",
+    hosp_last_7days = ""
+  )%>%
+  border_remove()%>%
+  theme_booktabs()%>%
+  fontsize(i = 1, size = 12, part = "header") %>%   # adjust font size of header
+  bold(i = 1, bold = TRUE, part = "header") %>%     # adjust bold face of header
+  # add vertical lines to separate Recovered and Died sections
+  vline(part = "all", j = 1) %>%   # at column 2 
+  vline(part = "all", j = 2)%>%      # at column 5
+  vline(part = "all", j = 6)%>%        # at column 5
+  merge_at(i = 1, j = 4:5, part = "header")%>%  # Horizontally merge columns 4 to 6 in new header row
+  merge_at(i = 1:2, j = 1, part = "header") %>% 
+  merge_at(i = 1:2, j = 2, part = "header")%>%
+  merge_at(i = 1:2, j = 7, part = "header")%>%
+  flextable::align(align = "center", j = 1, part = "all")
+  
+
+```
+
+```{r}
+
+# clean linelist of adappt
+adapt_linelist <- adapt%>%
+  dplyr::select(-NEW_CRITICAL)%>%
+  janitor::clean_names()%>%
+  mutate(country_fk = str_to_lower(country_fk),
+        epiweek = lubridate::floor_date(              # create new column of weeks
+        report_date,                                 # date column
+        unit = "week",                                  # give start of the week
+        week_start = 1))%>%
+  mutate(country_fk = str_to_title(country_fk))%>%
+  group_by(who_region, epiweek)%>%
+  summarise(hosp_adpt = sum(new_hospitalizations, na.rm = T))%>%
+  filter(epiweek >"2022-1-2" & epiweek <"2023-01-24")
+
+# get 2022 to w4 2023 of xmart 
+plot_region_2<- hosp_data%>%
+  mutate(epiweek = lubridate::floor_date(              # create new column of weeks
+    ISO_START_DATE,                                 # date column
+    unit = "week",                                  # give start of the week
+    week_start = 1))%>%
+  group_by(WHO_REGION, epiweek)%>%
+  summarise(hosp  = sum(weekly_hosp, na.rm = T),
+            death = sum(weekly_deaths, na.rm = T),
+            cases = sum(weekly_cases, na.rm = T))%>%
+  filter(WHO_REGION != "OTHER" & epiweek >"2022-1-2")%>%
+  filter(epiweek <"2023-01-24")
+
+join_xmart_adapt <- full_join(adapt_linelist, plot_region_2, by=c("who_region" = "WHO_REGION", "epiweek"))
+join_xmart_adapt <- join_xmart_adapt%>%mutate(epiweek = as.Date(epiweek))
+
+
+```
+# 5- ADAPT source overview
+Since 2021 ADAPT scrapped new hospitalization of **6** regions and **64** countries: **AFRO (11 countries)** , **AMRO (17 countries)**, **EMRO (7 countries)**, **EURO (20 countries)**, **SEARO (1 country)** and ,**WPRO (8 countries)**.
+
+** Comparative chart of new hospitalizations reported in XMART and ADAPT since 2022 through week 4-2023
+```{r echo = FALSE, include=TRUE}
+ggplot(data = join_xmart_adapt, aes(x = epiweek, y = hosp))+
+  geom_line(aes(color = "XMART"), size = 1.5)+
+  geom_line(data = join_xmart_adapt, aes(x = epiweek, y = hosp_adpt, color = "ADAPT"), size=1.5)+
+ # scale_color_discrete(name = '', labels = c( 'ADAPT','XMART'))+
+   scale_color_manual(       # Define fill for violin background by death/recover
+    values = c('#bf0089','#00bfac')) + 
+  scale_colour_discrete(name="Source")+
+  scale_x_date(
+    expand = c(0,0),
+    date_breaks = "2 weeks",
+    date_labels = "%Y -W%W")+
+  scale_y_continuous(
+    position = "right")+
+  theme_minimal()+
+  facet_wrap(~who_region, scales = "free", ncol = 2)+
+  theme(axis.text.x = element_text(size = 7, angle = 90),
+        axis.text.y = element_text(size = 9),
+        legend.position = "bottom")+
+  labs(
+    x = "Weekly report",
+    y = "cases in number",
+    title = "Time series of countries reporting new hospitalization in XMART and ADAPT, period: from 2022 to W4_2023",
+    caption = "Source"
+  )
+```
+
+The table presents potential countries with good and consistent new scrapped hospitalizations in 3 regions, AMR, SEARO, WPRO that are not directly reporting in XMART.
+```{r, fig.width = 10, fig.height= 8, out.extra='class=\"zoom\"'}
+# adapt table
+file_name = glue::glue("output/adapt.png")
+```
+
+```{r}
+
+```
+
+

@@ -20,7 +20,8 @@ core_packages <- c(
   "stringr",
   "epikit",
   "forcats",
-  "tidyverse"
+  "tidyverse",
+  "shiny"
 )
 
 ## define packages on github that DON'T require rtools

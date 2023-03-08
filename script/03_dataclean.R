@@ -14,7 +14,7 @@ usa_data <- USA_file%>%
   # remove states
   filter(state != "PR" & state != "VI"& state != "MP" & state != "PW" & state != "FM" & state != "MH" & state != "GU" & state !="AS" )%>%
   replace(is.na(.), 0) %>%
-  select(state, date, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
+  dplyr::select(state, date, previous_day_admission_adult_covid_confirmed, previous_day_admission_pediatric_covid_confirmed)%>%
   # calculate new hospitalization column
   mutate(previous_day_admission_adult_covid_confirmed     = as.numeric(previous_day_admission_adult_covid_confirmed),
          previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed),
@@ -307,12 +307,7 @@ historical_dataset<- historical_dataset%>%filter(iso_week_number !=last_week)
 
 export(historical_dataset, here("data", "clean","historical_clean_data.csv"))
 
-
 ########################################################################################################################
 
-
-
-
-week("2022-09-11")
 
 
