@@ -296,11 +296,10 @@ ref_places <- ref_places%>%distinct()%>%rename(country = ADM0_NAME)
 ### Join ref country and historical data
 historical_dataset <- left_join(historical_data_full, ref_places, by= ("country"))
 
+last_week = max(historical_dataset$epiweek)
+
 # remove last week
-
-last_week <- max(historical_dataset$iso_week_number)
-historical_dataset<- historical_dataset%>%filter(iso_week_number !=last_week)
-
+historical_dataset<- historical_dataset%>%filter(epiweek < last_week)
 
 ###########################################################################################
 #### Export data to Excel
