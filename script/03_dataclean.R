@@ -64,11 +64,13 @@ switzerland_data <- switzerland_2%>%select(country_name, report_date, new_hospit
          report_date         = as.Date(report_date),
          new_hospitalization = as.numeric(new_hospitalization))
 
+
+
 ####################### New Zealand
-new_zealand_data <- new_zealand_file%>%
+new_zealand_data <- new_zealand_file_1%>%
   filter(Variable.Label == "Sex")%>%
-  select(Admissions.for.COVID.19.in.the.week.starting, Hospitalisations, ICU)%>%
-  rename(report_date            =  Admissions.for.COVID.19.in.the.week.starting,             # change column name
+  select(Admissions.for.COVID.19.in.the.week.ending, Hospitalisations, ICU)%>%
+  rename(report_date            =  Admissions.for.COVID.19.in.the.week.ending,             # change column name
          new_hospitalization    =  Hospitalisations,
          new_icu                =  ICU )%>%
   mutate(country_name = "New Zealand",
