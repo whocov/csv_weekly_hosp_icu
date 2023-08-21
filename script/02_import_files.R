@@ -73,6 +73,8 @@ pacman::p_load(
 # Manual import
 new_zealand_file <- read.csv("https://raw.githubusercontent.com/minhealthnz/nz-covid-data/19a3dc6c82240915a45227d5b4b102730a7c43ed/cases/weekly-hospitalisations-for-covid.csv")
 new_zealand_file_1<-read.csv("https://raw.githubusercontent.com/minhealthnz/nz-covid-data/main/cases/weekly-hospitalisations-for-covid.csv")
+
+
 ########## United States of America
 path <- "https://healthdata.gov/resource/g62h-syeh.json?$limit=50000"  # prepare request
 request <- GET(url = path)

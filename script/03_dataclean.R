@@ -22,7 +22,7 @@ usa_data <- USA_file%>%
          date = as.Date(date))
 
 
-################ USA file 1
+################ USA file 2
 usa_data_2_rows <- USA_file_1%>%
   # remove states
   filter(state != "PR" & state != "VI"& state != "MP" & state != "PW" & state != "FM" & state != "MH" & state != "GU" & state !="AS")%>%
@@ -62,7 +62,10 @@ switzerland_2 <-switzerland_1%>%filter(iso_week != 53)%>%                       
 switzerland_data <- switzerland_2%>%select(country_name, report_date, new_hospitalization)%>%
   mutate(country_name        = as.character(country_name),
          report_date         = as.Date(report_date),
-         new_hospitalization = as.numeric(new_hospitalization))
+         new_hospitalization = as.numeric(new_hospitalization))%>%
+  group_by(country_name, report_date)%>%
+  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T))
+  
 
 
 
@@ -74,8 +77,9 @@ new_zealand_data <- new_zealand_file_1%>%
          new_hospitalization    =  Hospitalisations,
          new_icu                =  ICU )%>%
   mutate(country_name = "New Zealand",
-         report_date  = as.Date(report_date))
-
+         report_date  = as.Date(report_date))%>%
+  group_by(country_name, report_date)%>%
+  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T), new_icu = sum(new_icu, na.rm = T))
 
 # Bulgaria data source
 colnames(bulgaria_file) <- as.character(unlist(bulgaria_file[1,]))                         # assign headers based on existing row in dataframe in R
@@ -87,7 +91,9 @@ bulgaria_data<- as.data.frame(bulgaria_file)%>%                                 
                   new_hospitalization = Новохоспитализирани)%>%
           mutate(country_name         = "Bulgaria",
                  report_date          = as.Date(report_date),
-                 new_hospitalization  = as.numeric(new_hospitalization))
+                 new_hospitalization  = as.numeric(new_hospitalization))%>%
+  group_by(country_name, report_date)%>%
+  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T))
 
 
 ############## United Kingdom
@@ -97,7 +103,9 @@ unitedKingdom_data <- unitedKingdom_data%>%select(date, areaName, newAdmissions,
          country_name        = areaName,
          new_hospitalization = newAdmissions,
          new_icu             = covidOccupiedMVBeds)%>%
-  mutate(report_date = as.Date(report_date))
+  mutate(report_date = as.Date(report_date))%>%
+  group_by(country_name, report_date)%>%
+  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T), new_icu = sum(new_icu, na.rm = T))
 
 
 
@@ -130,15 +138,18 @@ ireland_hosp_data <- ireland_hosp_data%>%
 
 ########### Ireland join table
 
-ireland_data <- full_join(ireland_hosp_dat1, ireland_icu_dat1, by=c("country_name", "report_date"))                            # Join icu and hospitalization in Ireland
-
+ireland_data <- full_join(ireland_hosp_dat1, ireland_icu_dat1, by=c("country_name", "report_date"))%>%                            # Join icu and hospitalization in Ireland
+  group_by(country_name, report_date)%>%
+  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T), new_icu = sum(new_icu, na.rm = T))
 
 ############## Denmark 
 denmark_data<- denmark_file%>%select(Dato, Total)%>%
   rename( report_date         = Dato,
           new_hospitalization = Total)%>%
   mutate( report_date = as.Date(report_date),
-          country_name = "Denmark")
+          country_name = "Denmark")%>%
+  group_by(country_name, report_date)%>%
+  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T))
 
 ############ Norway hospitalization
 norway_hosp_data<- norway_hosp%>%select(date, new_hospit)%>%
@@ -153,7 +164,9 @@ norway_icu_data<- norway_icu%>%select(date, new_icu)%>%
   mutate( country_name = "Norway",
           report_date  = as.Date(report_date))
 ####### Join norway 
-norway_data <- full_join(norway_hosp_data, norway_icu_data , by = c("country_name", "report_date")) 
+norway_data <- full_join(norway_hosp_data, norway_icu_data , by = c("country_name", "report_date")) %>%
+  group_by(country_name, report_date)%>%
+  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T), new_icu = sum(new_icu, na.rm = T))
 
 ######### Canada
 canada_data <- canada_file%>%select(Date, COVID_NEWICU, COVID_NEWOTHER)%>%
@@ -162,7 +175,9 @@ canada_data <- canada_file%>%select(Date, COVID_NEWICU, COVID_NEWOTHER)%>%
          new_hospitalization   = as.numeric(COVID_NEWOTHER),
          country_name = "Canada")
 
-canada_data_full <- canada_data%>%select(report_date, country_name, new_icu, new_hospitalization)
+canada_data_full <- canada_data%>%select(report_date, country_name, new_icu, new_hospitalization)%>%
+  group_by(country_name, report_date)%>%
+  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T), new_icu = sum(new_icu, na.rm = T))
 
 
 ############## Puerto Rico and Virgin Island (US)
@@ -244,6 +259,7 @@ historical_data_2 <- historical_data_1%>%
       week_start = 1
     ),
     iso_year = year(report_date))%>%
+
 # sum column base on value number
   group_by(country_name, epiweek)%>%
 summarise(new_hospitalization = if(all(is.na(new_hospitalization))) NA else sum(new_hospitalization, na.rm = T),
