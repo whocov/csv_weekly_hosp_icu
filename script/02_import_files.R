@@ -105,8 +105,8 @@ request_bulg$status_code  # check for any server error ("200" is good!)
 
 
 # submit the request, parse the response, and convert to a data frame
-bulgaria_api <- base::rawToChar(request_bulg$content)
-bulgaria_file <- jsonlite::fromJSON(bulgaria_api, flatten = TRUE)
+#bulgaria_api <- base::rawToChar(request_bulg$content)
+#bulgaria_file <- jsonlite::fromJSON(bulgaria_api, flatten = TRUE)
 
 
 ########## Switzerland

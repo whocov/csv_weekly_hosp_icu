@@ -82,18 +82,18 @@ new_zealand_data <- new_zealand_file_1%>%
   summarise(new_hospitalization = sum(new_hospitalization, na.rm = T), new_icu = sum(new_icu, na.rm = T))
 
 # Bulgaria data source
-colnames(bulgaria_file) <- as.character(unlist(bulgaria_file[1,]))                         # assign headers based on existing row in dataframe in R
-bulgaria_file = bulgaria_file[-1, ]
+#colnames(bulgaria_file) <- as.character(unlist(bulgaria_file[1,]))                         # assign headers based on existing row in dataframe in R
+#bulgaria_file = bulgaria_file[-1, ]
 
-bulgaria_data<- as.data.frame(bulgaria_file)%>%                                            # convert to dataframe
-          select(Дата, Новохоспитализирани )%>%
-          rename( report_date         = Дата,
-                  new_hospitalization = Новохоспитализирани)%>%
-          mutate(country_name         = "Bulgaria",
-                 report_date          = as.Date(report_date),
-                 new_hospitalization  = as.numeric(new_hospitalization))%>%
-  group_by(country_name, report_date)%>%
-  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T))
+#bulgaria_data<- as.data.frame(bulgaria_file)%>%                                            # convert to dataframe
+#          select(Дата, Новохоспитализирани )%>%
+#          rename( report_date         = Дата,
+#                  new_hospitalization = Новохоспитализирани)%>%
+#          mutate(country_name         = "Bulgaria",
+#                 report_date          = as.Date(report_date),
+#                 new_hospitalization  = as.numeric(new_hospitalization))%>%
+#  group_by(country_name, report_date)%>%
+#  summarise(new_hospitalization = sum(new_hospitalization, na.rm = T))
 
 
 ############## United Kingdom
@@ -225,7 +225,7 @@ PR_VI_dataset_full<-PR_VI_dataset_1%>%filter(new_hospitalization != 0)%>%
 #####################################################################################
 # Join all countries by report date
 #################################################################
-data_1 <- full_join(switzerland_data,bulgaria_data, by=c("report_date", "country_name", "new_hospitalization"))
+data_1 <- switzerland_data
 data_2 <- full_join(new_zealand_data,unitedKingdom_data, by=c("report_date", "country_name", "new_hospitalization", "new_icu"))
 data_3 <- full_join(ireland_data,norway_data, by=c("report_date", "country_name", "new_hospitalization", "new_icu"))
 data_4 <- full_join(usa_data_full, denmark_data, by=c("report_date", "country_name", "new_hospitalization"))
