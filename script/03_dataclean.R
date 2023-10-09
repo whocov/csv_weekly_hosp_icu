@@ -238,8 +238,6 @@ data_5_1_4 <- full_join(PR_VI_dataset_full, data_1_4, by = c("report_date", "cou
 
 historical_data <- full_join(data_2_3_canada, data_5_1_4, by = c("report_date", "country_name", "new_hospitalization"))
 
-
-
 ###################################################################
 ## clean historical data
 ################################################################
