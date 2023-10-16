@@ -118,7 +118,6 @@ request_swit$status_code   # check for any server error ("200" is good!)
 # submit the request, parse the response, and convert to a data frame
 swit_api <- base::rawToChar(request_swit$content)
 switzerland_file <- jsonlite::fromJSON(swit_api, flatten = TRUE)
-
 ##############Ireland
 ######### Ireland hospitalization API
 ireland_hosp_file <- "https://services-eu1.arcgis.com/z6bHNio59iTqqSUY/arcgis/rest/services/Covid19AcuteHospitalHistoricSummaryOpenData/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson"
