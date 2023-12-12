@@ -44,6 +44,7 @@ usa_data_full<-usa_data_join%>%filter(new_hospitalization != 0)%>%
   group_by(country_name, date)%>%
   summarise(new_hospitalization = sum(new_hospitalization, na.rm = T))%>%rename(report_date = date)
 
+max(usa_data_full$report_date)
 
 ############### Switzerland data clean
 switzerland_1<- switzerland_file%>%
@@ -80,6 +81,7 @@ new_zealand_data <- new_zealand_file_1%>%
          report_date  = as.Date(report_date))%>%
   group_by(country_name, report_date)%>%
   summarise(new_hospitalization = sum(new_hospitalization, na.rm = T), new_icu = sum(new_icu, na.rm = T))
+
 
 # Bulgaria data source
 #colnames(bulgaria_file) <- as.character(unlist(bulgaria_file[1,]))                         # assign headers based on existing row in dataframe in R
