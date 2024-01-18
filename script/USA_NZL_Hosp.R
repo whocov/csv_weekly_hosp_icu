@@ -125,15 +125,17 @@ USA_NZL_data <- USA_NZL_data%>%
       unit = "week",
       week_start = 1))%>%
   # sum column base on value number
-  group_by(country, epiweek)%>%
+  group_by(WHO_REGION, ISO_3_CODE, country, epiweek)%>%
   summarise(new_hospitalization = if(all(is.na(new_hospitalization))) NA else sum(new_hospitalization, na.rm = T),
             new_icu             = if(all(is.na(new_icu))) NA else sum(new_icu, na.rm = T))
+
 
 ########################################################
 USA_NZL_data<- USA_NZL_data%>%
   mutate(iso_year    = year(epiweek),         #create year column
          iso_week_number = week(epiweek))     #create week number columns
 
+
 # Export dataset
-export(USA_NZL_data, here("USA_NZL_Hosp.csv"))
+export(USA_NZL_data, here("data","clean" ,"historical_clean_data.csv"))
 
