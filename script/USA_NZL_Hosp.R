@@ -30,6 +30,38 @@ pacman::p_load(
 #############################################################################################
 ### Import file of countries who have API GET json or Github
 
+
+
+
+
+library(httr)
+
+# URL of the action where the form is submitted
+url <- "https://dportal.kdca.go.kr/pot/is/st/ari.do"
+
+
+
+# The POST request with form data
+response <- POST(url, body = list(
+  filePath = "1920019a0d33.csv",
+  downFileName = "Acute respiratory infection selected- covid-19[Corona 19 virus].csv",
+  deleteYn = "true"
+), encode = "form")
+
+# Save the CSV file
+test <- writeBin(content(response, "raw"), "downloaded_file.csv")
+
+# Check the status
+if (status_code(response) == 200) {
+  print("File downloaded successfully")
+} else {
+  print(paste("Failed to download. Status code:", status_code(response)))
+}
+
+
+
+
+
 ########## United States of America
 path <- "https://healthdata.gov/resource/g62h-syeh.json?$limit=50000"  # prepare request
 request <- GET(url = path)
