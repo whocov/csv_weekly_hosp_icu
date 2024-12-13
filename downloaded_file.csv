@@ -1229,8 +1229,6 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 							<ul class="dep1_list">
 								
 									
-								
-									
 										
 											
 											
@@ -1244,6 +1242,8 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 												
 													
 													
+												
+											
 												
 											
 												
@@ -1390,6 +1390,27 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 																	
 																		
 																		성별/연령별
+																	
+																</a>
+															</li>
+														
+													
+														
+															
+																
+																
+																
+															
+
+															
+															
+
+															<li>
+																
+																<a href="/pot/is/dashboardEDW.do" target="_blank" title="새창으로 이동합니다.">
+																	
+																		
+																		대시보드
 																	
 																</a>
 															</li>
@@ -2698,14 +2719,14 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 							
 								
 									
-								
-									
 										
 										
 											
 												
 													
 													
+												
+											
 												
 											
 												
@@ -2737,8 +2758,6 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 										<ul class="menu_list">
 											
 												
-											
-												
 													
 														
 														
@@ -2751,6 +2770,8 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 															
 																
 																
+															
+														
 															
 														
 															
@@ -2896,6 +2917,27 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 																					
 																						
 																						성별/연령별
+																					
+																				</a>
+																			</li>
+																		
+																	
+																		
+																			
+																				
+																				
+																				
+																			
+
+																			
+																			
+
+																			<li>
+																				
+																				<a href="/pot/is/dashboardEDW.do" target="_blank" title="새창으로 이동합니다.">
+																					
+																						
+																						대시보드
 																					
 																				</a>
 																			</li>
@@ -4228,14 +4270,14 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 							
 								
 									
-								
-									
 										
 										
 											
 												
 													
 													
+												
+											
 												
 											
 												
@@ -4274,8 +4316,6 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 										<ul class="depth2">
 											
 												
-											
-												
 													
 														
 														
@@ -4289,6 +4329,8 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 															
 																
 																
+															
+														
 															
 														
 															
@@ -4435,6 +4477,27 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 																		
 																			
 																			성별/연령별
+																		
+																	</span>
+																</a>
+															
+														
+															
+																
+																	
+																	
+																	
+																
+
+																
+																
+
+																
+																<a href="/pot/is/dashboardEDW.do" class="link_sub" target="_blank" title="새창으로 이동합니다.">
+																	<span class="sub_text">
+																		
+																			
+																			대시보드
 																		
 																	</span>
 																</a>
@@ -5188,7 +5251,7 @@ if($scrollTop  > topBanner_scrollHight){
 		<li><a href="/pot/"><img src="/pot/resources/images/sub/nav-ico-home.png" alt="home"></a></li>
 		
             
-			<li><a href="/pot/is/dashboardEDW.do">감염병통계</a></li>
+			<li><a href="/pot/is/summaryEDW.do">감염병통계</a></li>
 		
             
 			<li><a href="/pot/is/st/influ.do">표본감시감염병</a></li>
@@ -5263,8 +5326,6 @@ $(document).ready(function() {
 							<ul class="side-type-list01 action" id="dis-tab01">
 								
 									
-								
-									
 										
 											
 											
@@ -5278,6 +5339,8 @@ $(document).ready(function() {
 												
 													
 													
+												
+											
 												
 											
 												
@@ -5406,6 +5469,23 @@ $(document).ready(function() {
 																
 																	
 																	성별/연령별
+																
+															</a>
+														
+													
+														
+															
+																
+																
+																
+															
+															
+															
+															
+															<a href="/pot/is/dashboardEDW.do" target="_blank" title="새창으로 이동합니다." class="txt-ell ">
+																
+																	
+																	대시보드
 																
 															</a>
 														
