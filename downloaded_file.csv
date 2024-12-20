@@ -771,6 +771,82 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 							<ul class="dep1_list">
 								
 									
+										
+											
+											
+											
+											
+										
+
+										
+										
+											
+												
+													
+													
+												
+											
+												
+											
+										
+
+										<li>
+											
+											<a href="/pot/bbs/BD_selectBbs.do?q_bbsSn=1025" target="_self">
+												
+													
+													발생현황
+												
+											</a>
+											
+												<ul class="dep2_list">
+													
+														
+															
+																
+																
+																
+															
+
+															
+															
+
+															<li>
+																
+																<a href="/pot/bbs/BD_selectBbs.do?q_bbsSn=1025" target="_self">
+																	
+																		
+																		최근 발생현황
+																	
+																</a>
+															</li>
+														
+													
+														
+															
+																
+																
+																
+															
+
+															
+															
+
+															<li>
+																
+																<a href="/pot/cv/trend/dmstc/selectMntrgSttus.do" target="_self">
+																	
+																		
+																		전체 발생현황
+																	
+																</a>
+															</li>
+														
+													
+												</ul>
+											
+										</li>
+									
 								
 									
 										
@@ -861,65 +937,6 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 															</li>
 														
 													
-														
-													
-														
-													
-												</ul>
-											
-										</li>
-									
-								
-									
-										
-											
-											
-											
-											
-										
-
-										
-										
-											
-												
-													
-													
-												
-											
-												
-											
-										
-
-										<li>
-											
-											<a href="/pot/cv/trend/dmstc/selectMntrgSttus.do" target="_self">
-												
-													
-													발생동향
-												
-											</a>
-											
-												<ul class="dep2_list">
-													
-														
-															
-																
-																
-																
-															
-
-															
-															
-
-															<li>
-																
-																<a href="/pot/cv/trend/dmstc/selectMntrgSttus.do" target="_self">
-																	
-																		
-																		코로나19 발생현황
-																	
-																</a>
-															</li>
 														
 													
 														
@@ -1260,7 +1277,7 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 
 										<li>
 											
-											<a href="/pot/is/summaryEDW.do" target="_blank" title="새창으로 이동합니다.">
+											<a href="/pot/is/summaryEDW.do" target="_self">
 												
 													
 													전수감시감염병
@@ -2210,24 +2227,12 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 							
 								
 									
-								
-									
 										
 										
 											
 												
 													
 													
-												
-											
-												
-											
-												
-											
-												
-											
-												
-											
 												
 											
 												
@@ -2258,6 +2263,82 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 									<div class="mDepth2">
 										<ul class="menu_list">
 											
+												
+													
+														
+														
+														
+													
+
+													
+													
+														
+															
+																
+																
+															
+														
+															
+														
+													
+													<li class="dropDown">
+														
+															
+																<a href="#">
+																	
+																		
+																		발생현황
+																	
+																</a>
+																<ul class="mDepth3">
+																	
+																		
+																			
+																				
+																				
+																				
+																			
+
+																			
+																			
+
+																			<li>
+																				
+																				<a href="/pot/bbs/BD_selectBbs.do?q_bbsSn=1025" target="_self">
+																					
+																						
+																						최근 발생현황
+																					
+																				</a>
+																			</li>
+																		
+																	
+																		
+																			
+																				
+																				
+																				
+																			
+
+																			
+																			
+
+																			<li>
+																				
+																				<a href="/pot/cv/trend/dmstc/selectMntrgSttus.do" target="_self">
+																					
+																						
+																						전체 발생현황
+																					
+																				</a>
+																			</li>
+																		
+																	
+																</ul>
+															
+															
+														
+													</li>
 												
 											
 												
@@ -2347,65 +2428,6 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 																			</li>
 																		
 																	
-																		
-																	
-																		
-																	
-																</ul>
-															
-															
-														
-													</li>
-												
-											
-												
-													
-														
-														
-														
-													
-
-													
-													
-														
-															
-																
-																
-															
-														
-															
-														
-													
-													<li class="dropDown">
-														
-															
-																<a href="#">
-																	
-																		
-																		발생동향
-																	
-																</a>
-																<ul class="mDepth3">
-																	
-																		
-																			
-																				
-																				
-																				
-																			
-
-																			
-																			
-
-																			<li>
-																				
-																				<a href="/pot/cv/trend/dmstc/selectMntrgSttus.do" target="_self">
-																					
-																						
-																						코로나19 발생현황
-																					
-																				</a>
-																			</li>
 																		
 																	
 																		
@@ -3764,24 +3786,12 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 							
 								
 									
-								
-									
 										
 										
 											
 												
 													
 													
-												
-											
-												
-											
-												
-											
-												
-											
-												
-											
 												
 											
 												
@@ -3804,7 +3814,7 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 							
 								
 									
-									<a href="/pot/www/CVID19/CVID19_INFO/DFNTN.jsp" aria-haspopup="false">
+									<a href="/pot/bbs/BD_selectBbs.do?q_bbsSn=1025" aria-haspopup="false">
 										
 											
 											코로나19
@@ -3819,6 +3829,80 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 										</div>
 										<ul class="depth2">
 											
+												
+													
+														
+														
+														
+														
+													
+
+													
+													
+														
+															
+																
+																
+															
+														
+															
+														
+													
+
+													<li>
+														<strong class="title_sub">
+															
+															<a href="/pot/bbs/BD_selectBbs.do?q_bbsSn=1025" target="_self">
+																
+																	
+																	발생현황
+																
+															</a>
+														</strong>
+														
+															
+																
+																	
+																	
+																	
+																
+
+																
+																
+
+																
+																<a href="/pot/bbs/BD_selectBbs.do?q_bbsSn=1025" class="link_sub" target="_self">
+																	<span class="sub_text">
+																		
+																			
+																			최근 발생현황
+																		
+																	</span>
+																</a>
+															
+														
+															
+																
+																	
+																	
+																	
+																
+
+																
+																
+
+																
+																<a href="/pot/cv/trend/dmstc/selectMntrgSttus.do" class="link_sub" target="_self">
+																	<span class="sub_text">
+																		
+																			
+																			전체 발생현황
+																		
+																	</span>
+																</a>
+															
+														
+													</li>
 												
 											
 												
@@ -3910,63 +3994,6 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 																</a>
 															
 														
-															
-														
-															
-														
-													</li>
-												
-											
-												
-													
-														
-														
-														
-														
-													
-
-													
-													
-														
-															
-																
-																
-															
-														
-															
-														
-													
-
-													<li>
-														<strong class="title_sub">
-															
-															<a href="/pot/cv/trend/dmstc/selectMntrgSttus.do" target="_self">
-																
-																	
-																	발생동향
-																
-															</a>
-														</strong>
-														
-															
-																
-																	
-																	
-																	
-																
-
-																
-																
-
-																
-																<a href="/pot/cv/trend/dmstc/selectMntrgSttus.do" class="link_sub" target="_self">
-																	<span class="sub_text">
-																		
-																			
-																			코로나19 발생현황
-																		
-																	</span>
-																</a>
 															
 														
 															
@@ -4348,7 +4375,7 @@ const VWORLD_KEY="8304C87A-15B0-3606-833E-BC9312CEA0B8";
 													<li>
 														<strong class="title_sub">
 															
-															<a href="/pot/is/summaryEDW.do" target="_blank" title="새창으로 이동합니다.">
+															<a href="/pot/is/summaryEDW.do" target="_self">
 																
 																	
 																	전수감시감염병
@@ -5361,7 +5388,7 @@ $(document).ready(function() {
 
 											
 
-											<a href="/pot/is/summaryEDW.do" target="_blank" title="새창으로 이동합니다." class="txt-ell ">
+											<a href="/pot/is/summaryEDW.do" target="_self" class="txt-ell ">
 												
 													
 													전수감시감염병
