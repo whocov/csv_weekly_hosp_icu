@@ -5388,12 +5388,20 @@ $(document).ready(function() {
 
 											
 
-											<a href="/pot/is/summaryEDW.do" target="_self" class="txt-ell ">
+											<!-- START 2024. 12. 30 웹 접근성 조치 -->
+
+
+
+
+
+<!-- 											</a> -->
+											<a href="#" class="txt-ell ">
 												
 													
 													전수감시감염병
 												
 											</a>
+											<!-- END 2024. 12. 30 웹 접근성 조치 -->
 
 											
 												<div class="side-type-list02">
@@ -5570,12 +5578,20 @@ $(document).ready(function() {
 
 											
 
-											<a href="/pot/is/st/influ.do" target="_self" class="txt-ell ">
+											<!-- START 2024. 12. 30 웹 접근성 조치 -->
+
+
+
+
+
+<!-- 											</a> -->
+											<a href="#" class="txt-ell ">
 												
 													
 													표본감시감염병
 												
 											</a>
+											<!-- END 2024. 12. 30 웹 접근성 조치 -->
 
 											
 												<div class="side-type-list02">
