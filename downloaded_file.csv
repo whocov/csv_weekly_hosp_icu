@@ -5389,18 +5389,16 @@ $(document).ready(function() {
 											
 
 											<!-- START 2024. 12. 30 웹 접근성 조치 -->
-
-
-
-
-
-<!-- 											</a> -->
+											
 											<a href="#" class="txt-ell ">
 												
 													
 													전수감시감염병
 												
 											</a>
+											
+											
+											
 											<!-- END 2024. 12. 30 웹 접근성 조치 -->
 
 											
@@ -5579,18 +5577,16 @@ $(document).ready(function() {
 											
 
 											<!-- START 2024. 12. 30 웹 접근성 조치 -->
-
-
-
-
-
-<!-- 											</a> -->
+											
 											<a href="#" class="txt-ell ">
 												
 													
 													표본감시감염병
 												
 											</a>
+											
+											
+											
 											<!-- END 2024. 12. 30 웹 접근성 조치 -->
 
 											
@@ -5874,7 +5870,7 @@ $(document).ready(function() {
                         <li><a href="https://tbzero.kdca.go.kr/tbzero/index.jsp" target="_blank" title="결핵ZERO 새창 열림">결핵ZERO</a></li>
                         <li><a href="https://nip.kdca.go.kr/irhp/index.jsp" target="_blank" title="예방접종도우미 새창 열림">예방접종도우미</a></li>
                         <li><a href="https://nqs.kdca.go.kr/nqs/main.do" target="_blank" title="국립검역소 새창 열림">국립검역소</a></li>
-                        <li><a href="http://xn--now-po7lf48dlsm0ya109f.kr/nqs/oidnow/contents/info.do" target="_blank" title="해외감염병now 새창 열림">해외감염병now</a></li>
+                        <li><a href="http://xn--now-po7lf48dlsm0ya109f.kr/nqs/oidnow/main/index.do" target="_blank" title="해외감염병now 새창 열림">해외감염병now</a></li>
                         <li><a href="https://knhanes.kdca.go.kr/knhanes/intro.html" target="_blank" title="국민건강영양조사 새창 열림">국민건강영양조사</a></li>
                         <li><a href="https://health.kdca.go.kr/healthinfo/" target="_blank" title="국가건강정보포털 새창 열림">국가건강정보포털</a></li>
                         <li><a href="https://www.kdca.go.kr/injury/" target="_blank" title="국가손상정보포털 새창 열림">국가손상정보포털</a></li>
