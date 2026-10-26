@@ -123,7 +123,7 @@ if (nrow(cdc_hrd_usa) == 0L) {
 # No separate 'date' or 'week_ending_date' column is retained.
 CDC_USA_clean_data <- cdc_hrd_usa %>%
   transmute(
-    WHO_REGION = "AMRO",
+    WHO_REGION = "AMR",
     ISO_3_CODE = "USA",
     country = "UNITED STATES OF AMERICA",
     
